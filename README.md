@@ -81,6 +81,33 @@ sh k8s/carga_hpa.sh
 
 Os testes Go (`go test -race`) correm dentro do `docker build` do inventário.
 
+## Modo nativo (sem Docker)
+
+Foi assim que as evidências de `docs/evidencias/` foram obtidas, num Windows 10 sem Docker. São precisos Go 1.23, o PostgreSQL 16 (os binários em ZIP chegam) e o Python com `servicos/requisitos.txt` e `locust`.
+
+```sh
+export POSTGRES_BIN=<pasta bin do PostgreSQL 16> PYTHON=<python do venv> INVENTARIO_BIN=$PWD/build/inventario.exe
+(cd servicos/inventario && python -m grpc_tools.protoc -I ../../proto --plugin=protoc-gen-go=<...> \
+   --plugin=protoc-gen-go-grpc=<...> --go_out=. --go_opt=module=distributedbuy/inventario \
+   --go-grpc_out=. --go-grpc_opt=module=distributedbuy/inventario ../../proto/loja.proto && go build -o ../../build/inventario.exe .)
+sh infra/certs/gerar_certs.sh
+python scripts/nativo.py criar       # master + 2 réplicas em streaming + base do monólito
+python scripts/nativo.py iniciar     # gateway em http://127.0.0.1:18080/docs
+export SCAD_MODO=nativo
+python testes/sistema/concorrencia.py inseguro && python testes/sistema/concorrencia.py seguro
+python testes/sistema/cap.py
+python testes/carga/executar_nativo.py
+python testes/sistema/capturar.py    # imagens da saída para o relatório
+python scripts/nativo.py parar
+```
+
+O modo nativo tem duas diferenças em relação ao Docker:
+
+- **DFS:** é uma pasta local, porque o Windows não tem cliente NFS.
+- **Rede:** a partição e a latência são simuladas por `scripts/proxy_rede.py`, um proxy TCP que corta a ligação ou acrescenta atraso.
+
+Use `127.0.0.1` e não `localhost`. No Windows, `localhost` tenta primeiro o IPv6 e acrescenta cerca de 2 s a cada ligação.
+
 ## Portas
 
 | Serviço | Porta | Protocolo | Publicada no anfitrião |
