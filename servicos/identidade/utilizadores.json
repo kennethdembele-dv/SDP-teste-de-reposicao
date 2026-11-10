@@ -1,0 +1,14 @@
+{
+  "admin": {
+    "senha": "pbkdf2_sha256$120000$a7c29d8d795242030f1af9d2b3113f44$d1f978421771a1db4891426a5f61b91e92ee3643c822d7d5b8a1dd13a5ef4292",
+    "papel": "admin"
+  },
+  "cliente1": {
+    "senha": "pbkdf2_sha256$120000$7e81492fc0319c980a77055408f0b1bd$48091abe94a32b4830d22ae66f96b4c45e9cffb09627b52942f68b39de4a8689",
+    "papel": "cliente"
+  },
+  "cliente2": {
+    "senha": "pbkdf2_sha256$120000$e91e888f2f10a55e37ad8c84144c8338$7308f250c60f56a0819bbf5c458e99ac09073e36d68a0b6017cd0143f0c5ffe0",
+    "papel": "cliente"
+  }
+}

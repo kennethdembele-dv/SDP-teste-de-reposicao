@@ -1,0 +1,165 @@
+# Distributed-Buy: um contentor por microsservico numa rede bridge propria (Modulo 1).
+#   sh infra/certs/gerar_certs.sh          (uma vez)
+#   docker compose up -d --build
+#   docker compose --profile comparacao up -d       (monolito, para o Modulo 2)
+#   docker compose --profile carga run --rm locust ... (ver testes/carga)
+#
+# Controlo de portos: so o gateway (8080) e as ferramentas de teste sao publicados no anfitriao.
+# Os servicos internos usam apenas "expose": sao alcancaveis na rede loja-net, pelo nome DNS.
+
+name: distributed-buy
+
+x-certs: &certs ./infra/certs/out:/certs:ro
+
+x-python: &python
+  build:
+    context: .
+    dockerfile: servicos/Dockerfile.python
+  restart: unless-stopped
+  networks: [loja-net]
+
+services:
+  # ---------------- Base de dados: 1 master + 2 replicas (slaves) ----------------
+  pg-master:
+    image: postgres:16.4-alpine
+    hostname: pg-master
+    environment:
+      POSTGRES_USER: loja
+      POSTGRES_PASSWORD: ${PG_SENHA:-loja}
+      POSTGRES_DB: postgres
+    command: ["postgres", "-c", "wal_level=replica", "-c", "max_wal_senders=10",
+              "-c", "max_replication_slots=10", "-c", "hot_standby=on"]
+    volumes:
+      - pg-master:/var/lib/postgresql/data
+      - ./infra/postgres/esquema.sql:/esquema/esquema.sql:ro
+      - ./infra/postgres/master-init.sh:/docker-entrypoint-initdb.d/10-init.sh:ro
+    expose: ["5432"]
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "loja", "-d", "inventario"]
+      interval: 3s
+      retries: 30
+    networks: [loja-net]
+
+  pg-replica1: &replica
+    image: postgres:16.4-alpine
+    hostname: pg-replica1
+    user: postgres
+    entrypoint: ["/bin/sh", "/replica-entrypoint.sh"]
+    environment: { PGDATA: /var/lib/postgresql/data, MASTER_HOST: pg-master, PG_SENHA: "${PG_SENHA:-loja}", SLOT: replica1 }
+    volumes:
+      - pg-replica1:/var/lib/postgresql/data
+      - ./infra/postgres/replica-entrypoint.sh:/replica-entrypoint.sh:ro
+    depends_on: { pg-master: { condition: service_healthy } }
+    expose: ["5432"]
+    networks: [loja-net]
+
+  pg-replica2:
+    <<: *replica
+    hostname: pg-replica2
+    environment: { PGDATA: /var/lib/postgresql/data, MASTER_HOST: pg-master, PG_SENHA: "${PG_SENHA:-loja}", SLOT: replica2 }
+    volumes:
+      - pg-replica2:/var/lib/postgresql/data
+      - ./infra/postgres/replica-entrypoint.sh:/replica-entrypoint.sh:ro
+
+  # ---------------- Sistema de ficheiros distribuido (Modulo 8) ----------------
+  nfs:
+    build: infra/nfs
+    privileged: true
+    ports: ["2049:2049"]        # o Docker do anfitriao monta o volume dfs por aqui
+    volumes: ["nfs-dados:/exports/dfs"]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "</dev/tcp/127.0.0.1/2049"]
+      interval: 3s
+      retries: 30
+    networks: [loja-net]
+
+  # ---------------- Microsservicos ----------------
+  identidade:
+    <<: *python
+    build: { context: ., dockerfile: servicos/Dockerfile.python, args: { SERVICO: identidade } }
+    environment:
+      SEGREDO_SVC_ENCOMENDAS: ${SEGREDO_SVC_ENCOMENDAS:-troque-este-segredo}
+    volumes: [*certs]
+    expose: ["8443"]
+
+  inventario:
+    build: { context: ., dockerfile: servicos/inventario/Dockerfile }
+    restart: unless-stopped
+    environment:
+      PG_MESTRE: postgres://loja:${PG_SENHA:-loja}@pg-master:5432/inventario
+      PG_REPLICAS: replica1=postgres://loja:${PG_SENHA:-loja}@pg-replica1:5432/inventario;replica2=postgres://loja:${PG_SENHA:-loja}@pg-replica2:5432/inventario
+      MODO_INSEGURO: ${MODO_INSEGURO:-false}
+    volumes: [*certs]
+    depends_on: { pg-master: { condition: service_healthy } }
+    expose: ["50052"]
+    networks: [loja-net]
+
+  pagamentos:
+    <<: *python
+    build: { context: ., dockerfile: servicos/Dockerfile.python, args: { SERVICO: pagamentos } }
+    environment:
+      PG_DSN: postgresql://loja:${PG_SENHA:-loja}@pg-master:5432/pagamentos
+      FALHA_PAGAMENTO_PCT: ${FALHA_PAGAMENTO_PCT:-0}
+    volumes: [*certs, "dfs:/mnt/dfs"]
+    depends_on: { pg-master: { condition: service_healthy }, nfs: { condition: service_healthy } }
+    expose: ["50053"]
+
+  encomendas:
+    <<: *python
+    build: { context: ., dockerfile: servicos/Dockerfile.python, args: { SERVICO: encomendas } }
+    environment:
+      PG_DSN: postgresql://loja:${PG_SENHA:-loja}@pg-master:5432/encomendas
+      SEGREDO_SERVICO: ${SEGREDO_SVC_ENCOMENDAS:-troque-este-segredo}
+    volumes: [*certs]
+    depends_on: { pg-master: { condition: service_healthy } }
+    expose: ["50051"]
+
+  gateway:
+    <<: *python
+    build: { context: ., dockerfile: servicos/Dockerfile.python, args: { SERVICO: gateway } }
+    volumes: [*certs, "dfs:/mnt/dfs"]
+    depends_on: { nfs: { condition: service_healthy } }
+    ports: ["8080:8080"]        # unica porta publica do sistema
+
+  # ---------------- Comparacao centralizada (Modulo 2) ----------------
+  pg-monolito:
+    image: postgres:16.4-alpine
+    profiles: [comparacao]
+    environment: { POSTGRES_USER: loja, POSTGRES_PASSWORD: "${PG_SENHA:-loja}", POSTGRES_DB: postgres }
+    volumes: ["./infra/postgres/monolito.sql:/docker-entrypoint-initdb.d/10-monolito.sql:ro"]
+    healthcheck: { test: ["CMD", "pg_isready", "-U", "loja", "-d", "monolito"], interval: 3s, retries: 30 }
+    networks: [loja-net]
+
+  monolito:
+    <<: *python
+    profiles: [comparacao]
+    build: { context: ., dockerfile: servicos/Dockerfile.python, args: { SERVICO: monolito } }
+    environment: { PG_DSN: "postgresql://loja:${PG_SENHA:-loja}@pg-monolito:5432/monolito" }
+    depends_on: { pg-monolito: { condition: service_healthy } }
+    ports: ["8090:8090"]
+
+  locust:
+    image: locustio/locust:2.32.2
+    profiles: [carga]
+    volumes: ["./testes/carga:/mnt/carga"]
+    working_dir: /mnt/carga
+    networks: [loja-net]
+
+networks:
+  loja-net:
+    driver: bridge
+    ipam:
+      config: [{ subnet: 172.28.0.0/24 }]
+
+volumes:
+  pg-master: {}
+  pg-replica1: {}
+  pg-replica2: {}
+  nfs-dados: {}
+  # Volume montado por NFS pelo Docker do anfitriao: os ficheiros nao ficam no disco do contentor.
+  dfs:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NFS_IP:-127.0.0.1},rw,nfsvers=4.0,port=2049,soft,timeo=50,retrans=2"
+      device: ":/dfs"

@@ -1,0 +1,146 @@
+// Contratos internos do Distributed-Buy (Modulo 5).
+// O fluxo de criacao de encomendas usa apenas estas chamadas gRPC; nao ha REST interno.
+syntax = "proto3";
+
+package loja.v1;
+
+option go_package = "distributedbuy/inventario/gen/lojav1;lojav1";
+
+// ---------------- Inventario (Go) ----------------
+
+message Produto {
+  string id = 1;
+  string nome = 2;
+  int64 preco_centavos = 3;   // valores em centavos de metical, sem arredondamentos
+  int32 stock = 4;
+  string imagem = 5;          // caminho da imagem no DFS
+  string fonte = 6;           // servidor de BD que respondeu (replica1, replica2 ou master)
+}
+
+message ListarProdutosPedido {}
+
+message ListaProdutos {
+  repeated Produto produtos = 1;
+  string fonte = 2;
+}
+
+message ProdutoId {
+  string id = 1;
+}
+
+message ItemEncomenda {
+  string produto_id = 1;
+  int32 quantidade = 2;
+}
+
+// Passo 1 da saga: retira o stock. A chave e o saga_id, por isso repetir nao retira duas vezes.
+message PedidoReserva {
+  string saga_id = 1;
+  repeated ItemEncomenda itens = 2;
+}
+
+message RespostaReserva {
+  string saga_id = 1;
+  int64 total_centavos = 2;
+  bool repetida = 3;
+}
+
+// Transaccao de compensacao: devolve o stock retirado pela reserva.
+message PedidoCompensacao {
+  string saga_id = 1;
+  string motivo = 2;
+}
+
+message RespostaCompensacao {
+  string saga_id = 1;
+  bool compensada = 2;
+  string estado = 3;          // COMPENSADA, JA_COMPENSADA ou SEM_RESERVA
+}
+
+message PedidoImagem {
+  string produto_id = 1;
+  string imagem = 2;
+}
+
+message PedidoStock {
+  string produto_id = 1;
+  int32 stock = 2;
+}
+
+service Inventario {
+  rpc ListarProdutos(ListarProdutosPedido) returns (ListaProdutos);
+  rpc ObterProduto(ProdutoId) returns (Produto);
+  rpc ReservarStock(PedidoReserva) returns (RespostaReserva);
+  rpc CompensarReserva(PedidoCompensacao) returns (RespostaCompensacao);
+  rpc DefinirImagem(PedidoImagem) returns (Produto);
+  rpc DefinirStock(PedidoStock) returns (Produto);
+}
+
+// ---------------- Pagamentos (Python) ----------------
+
+message PedidoPagamento {
+  string saga_id = 1;         // chave idempotente do pagamento
+  string cliente = 2;
+  int64 valor_centavos = 3;
+  string cartao = 4;
+}
+
+message RespostaPagamento {
+  string saga_id = 1;
+  bool aprovado = 2;
+  string motivo = 3;
+  string referencia = 4;
+  bool repetido = 5;
+}
+
+message PedidoRelatorio {
+  string data = 1;            // AAAA-MM-DD; vazio significa hoje
+}
+
+message RespostaRelatorio {
+  string ficheiro = 1;        // caminho do relatorio no DFS
+  int32 pagamentos = 2;
+  int64 total_centavos = 3;
+}
+
+service Pagamentos {
+  rpc ProcessarPagamento(PedidoPagamento) returns (RespostaPagamento);
+  rpc GerarRelatorioFaturacao(PedidoRelatorio) returns (RespostaRelatorio);
+}
+
+// ---------------- Encomendas: orquestrador da saga (Python) ----------------
+
+message PedidoEncomenda {
+  repeated ItemEncomenda itens = 1;
+  string cartao = 2;
+  string chave_idempotencia = 3;
+}
+
+message Encomenda {
+  string id = 1;
+  string cliente = 2;
+  string estado = 3;          // CONCLUIDA, COMPENSADA, REJEITADA, PAGAMENTO_PENDENTE, ...
+  int64 total_centavos = 4;
+  string motivo = 5;
+  repeated ItemEncomenda itens = 6;
+  repeated string passos = 7; // historico da saga
+  string criada_em = 8;
+}
+
+message EncomendaId {
+  string id = 1;
+}
+
+message ListarEncomendasPedido {
+  int32 limite = 1;
+}
+
+message ListaEncomendas {
+  repeated Encomenda encomendas = 1;
+}
+
+service Encomendas {
+  rpc CriarEncomenda(PedidoEncomenda) returns (Encomenda);
+  rpc ObterEncomenda(EncomendaId) returns (Encomenda);
+  rpc ListarEncomendas(ListarEncomendasPedido) returns (ListaEncomendas);
+}

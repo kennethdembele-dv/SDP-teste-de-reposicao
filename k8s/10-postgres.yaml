@@ -1,0 +1,75 @@
+# Cluster PostgreSQL: 1 master (StatefulSet) + 2 replicas (StatefulSet com nome estavel por pod).
+apiVersion: v1
+kind: Service
+metadata: { name: pg-master, namespace: distributed-buy }
+spec:
+  selector: { app: pg-master }
+  ports: [{ port: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: pg-master, namespace: distributed-buy }
+spec:
+  serviceName: pg-master
+  replicas: 1
+  selector: { matchLabels: { app: pg-master } }
+  template:
+    metadata: { labels: { app: pg-master } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16.4-alpine
+          args: ["-c", "wal_level=replica", "-c", "max_wal_senders=10", "-c", "max_replication_slots=10", "-c", "hot_standby=on"]
+          env:
+            - { name: POSTGRES_USER, value: loja }
+            - { name: POSTGRES_PASSWORD, value: loja }
+            - { name: POSTGRES_DB, value: postgres }
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+          ports: [{ containerPort: 5432 }]
+          readinessProbe: { exec: { command: ["pg_isready", "-U", "loja", "-d", "inventario"] }, periodSeconds: 5 }
+          volumeMounts:
+            - { name: dados, mountPath: /var/lib/postgresql/data }
+            - { name: init, mountPath: /docker-entrypoint-initdb.d/10-init.sh, subPath: master-init.sh }
+            - { name: init, mountPath: /esquema/esquema.sql, subPath: esquema.sql }
+      volumes:
+        - { name: init, configMap: { name: pg-init } }
+  volumeClaimTemplates:
+    - metadata: { name: dados }
+      spec: { accessModes: [ReadWriteOnce], resources: { requests: { storage: 1Gi } } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: pg-replica, namespace: distributed-buy }
+spec:
+  clusterIP: None          # headless: cada replica tem o seu nome DNS (pg-replica-0.pg-replica)
+  selector: { app: pg-replica }
+  ports: [{ port: 5432 }]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: pg-replica, namespace: distributed-buy }
+spec:
+  serviceName: pg-replica
+  replicas: 2
+  selector: { matchLabels: { app: pg-replica } }
+  template:
+    metadata: { labels: { app: pg-replica } }
+    spec:
+      securityContext: { runAsUser: 70, fsGroup: 70 }
+      containers:
+        - name: postgres
+          image: postgres:16.4-alpine
+          command: ["/bin/sh", "-c", "SLOT=$(echo $HOSTNAME | tr - _) exec /bin/sh /init/replica-entrypoint.sh"]
+          env:
+            - { name: PGDATA, value: /var/lib/postgresql/data/pgdata }
+            - { name: MASTER_HOST, value: pg-master }
+            - { name: PG_SENHA, value: loja }
+          ports: [{ containerPort: 5432 }]
+          volumeMounts:
+            - { name: dados, mountPath: /var/lib/postgresql/data }
+            - { name: init, mountPath: /init }
+      volumes:
+        - { name: init, configMap: { name: pg-init } }
+  volumeClaimTemplates:
+    - metadata: { name: dados }
+      spec: { accessModes: [ReadWriteOnce], resources: { requests: { storage: 1Gi } } }

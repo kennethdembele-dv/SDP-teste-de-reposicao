@@ -1,0 +1,48 @@
+# DFS: servidor NFS no cluster e um volume ReadWriteMany partilhado por gateway e pagamentos.
+# O kubelet monta o NFS pelo IP do Service (nao usa o DNS do cluster), por isso o IP e fixo.
+apiVersion: v1
+kind: Service
+metadata: { name: nfs, namespace: distributed-buy }
+spec:
+  clusterIP: 10.96.200.200
+  selector: { app: nfs }
+  ports: [{ name: nfs, port: 2049 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: nfs, namespace: distributed-buy }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: nfs } }
+  template:
+    metadata: { labels: { app: nfs } }
+    spec:
+      containers:
+        - name: ganesha
+          image: distributed-buy/nfs:1.0
+          imagePullPolicy: Never
+          securityContext: { privileged: true }
+          ports: [{ containerPort: 2049 }]
+          volumeMounts: [{ name: exportacao, mountPath: /exports/dfs }]
+      volumes:
+        - name: exportacao
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata: { name: dfs }
+spec:
+  capacity: { storage: 2Gi }
+  accessModes: [ReadWriteMany]
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions: [nfsvers=4.0, soft, timeo=50]
+  nfs: { server: 10.96.200.200, path: /dfs }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: dfs, namespace: distributed-buy }
+spec:
+  accessModes: [ReadWriteMany]
+  storageClassName: ""
+  volumeName: dfs
+  resources: { requests: { storage: 2Gi } }

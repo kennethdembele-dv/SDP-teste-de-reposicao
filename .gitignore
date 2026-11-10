@@ -1,0 +1,10 @@
+.venv/
+build/
+__pycache__/
+*.pyc
+gen/
+infra/certs/out/
+infra/certs/ca-privada/
+testes/carga/resultados/
+.env
+docs/relatorio/__pycache__/

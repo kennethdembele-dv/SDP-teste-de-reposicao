@@ -1,0 +1,34 @@
+# Horizontal Pod Autoscaler: aumenta os pods quando a CPU media passa de 50% do pedido (request).
+# Precisa do Metrics Server (minikube addons enable metrics-server).
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: inventario, namespace: distributed-buy }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: inventario }
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 50 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: pagamentos, namespace: distributed-buy }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: pagamentos }
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 50 } }
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: gateway, namespace: distributed-buy }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: gateway }
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 50 } }

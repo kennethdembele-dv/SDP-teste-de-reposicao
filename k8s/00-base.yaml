@@ -1,0 +1,20 @@
+# Namespace e configuracao comum.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: distributed-buy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configuracao
+  namespace: distributed-buy
+data:
+  PG_MESTRE: postgres://loja:loja@pg-master:5432/inventario
+  PG_REPLICAS: replica1=postgres://loja:loja@pg-replica-0.pg-replica:5432/inventario;replica2=postgres://loja:loja@pg-replica-1.pg-replica:5432/inventario
+  PG_DSN_PAGAMENTOS: postgresql://loja:loja@pg-master:5432/pagamentos
+  PG_DSN_ENCOMENDAS: postgresql://loja:loja@pg-master:5432/encomendas
+  IDENTIDADE_URL: https://identidade:8443
+  INVENTARIO: inventario:50052
+  PAGAMENTOS: pagamentos:50053
+  ENCOMENDAS: encomendas:50051

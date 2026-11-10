@@ -1,0 +1,850 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Distributed-Buy API",
+    "description": "API publica do sistema de e-commerce distribuido. Internamente, cada pedido e convertido em chamadas gRPC (Protocol Buffers) protegidas por mTLS e JWT.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/auth/token": {
+      "post": {
+        "tags": [
+          "autenticacao"
+        ],
+        "summary": "Obter um token JWT (pedido a identidade por HTTPS com mTLS)",
+        "operationId": "login_api_v1_auth_token_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Token"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos": {
+      "get": {
+        "tags": [
+          "produtos"
+        ],
+        "summary": "Listar produtos (lido das replicas da base de dados)",
+        "operationId": "listar_produtos_api_v1_produtos_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListaProdutos"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/produtos/{produto_id}": {
+      "get": {
+        "tags": [
+          "produtos"
+        ],
+        "summary": "Obter Produto",
+        "operationId": "obter_produto_api_v1_produtos__produto_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "produto_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Produto Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{produto_id}/stock": {
+      "put": {
+        "tags": [
+          "produtos"
+        ],
+        "summary": "Definir o stock (admin; usado nas demonstracoes)",
+        "operationId": "definir_stock_api_v1_produtos__produto_id__stock_put",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "produto_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Produto Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovoStock"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/produtos/{produto_id}/imagem": {
+      "post": {
+        "tags": [
+          "ficheiros"
+        ],
+        "summary": "Carregar a imagem do produto para o DFS (admin)",
+        "operationId": "carregar_imagem_api_v1_produtos__produto_id__imagem_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "produto_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Produto Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_carregar_imagem_api_v1_produtos__produto_id__imagem_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Produto"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ficheiros/{pasta}/{nome}": {
+      "get": {
+        "tags": [
+          "ficheiros"
+        ],
+        "summary": "Ler uma imagem ou relatorio do DFS",
+        "operationId": "ler_ficheiro_api_v1_ficheiros__pasta___nome__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "pasta",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Pasta"
+            }
+          },
+          {
+            "name": "nome",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Nome"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/encomendas": {
+      "post": {
+        "tags": [
+          "encomendas"
+        ],
+        "summary": "Criar uma encomenda (saga: reserva de stock + pagamento, com compensacao)",
+        "operationId": "criar_encomenda_api_v1_encomendas_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NovaEncomenda"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Encomenda"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "encomendas"
+        ],
+        "summary": "Listar Encomendas",
+        "operationId": "listar_encomendas_api_v1_encomendas_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limite",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 20,
+              "title": "Limite"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Encomenda"
+                  },
+                  "title": "Response Listar Encomendas Api V1 Encomendas Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/encomendas/{encomenda_id}": {
+      "get": {
+        "tags": [
+          "encomendas"
+        ],
+        "summary": "Obter Encomenda",
+        "operationId": "obter_encomenda_api_v1_encomendas__encomenda_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "encomenda_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Encomenda Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Encomenda"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/relatorios/faturacao": {
+      "post": {
+        "tags": [
+          "ficheiros"
+        ],
+        "summary": "Gerar o relatorio de faturacao do dia no DFS (admin)",
+        "operationId": "gerar_relatorio_api_v1_relatorios_faturacao_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "data",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Data"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Relatorio"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/saude": {
+      "get": {
+        "tags": [
+          "sistema"
+        ],
+        "summary": "Saude",
+        "operationId": "saude_saude_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_carregar_imagem_api_v1_produtos__produto_id__imagem_post": {
+        "properties": {
+          "ficheiro": {
+            "type": "string",
+            "format": "binary",
+            "title": "Ficheiro"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ficheiro"
+        ],
+        "title": "Body_carregar_imagem_api_v1_produtos__produto_id__imagem_post"
+      },
+      "Encomenda": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "cliente": {
+            "type": "string",
+            "title": "Cliente"
+          },
+          "estado": {
+            "type": "string",
+            "title": "Estado"
+          },
+          "total_mt": {
+            "type": "number",
+            "title": "Total Mt"
+          },
+          "motivo": {
+            "type": "string",
+            "title": "Motivo"
+          },
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "type": "array",
+            "title": "Itens"
+          },
+          "passos": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Passos"
+          },
+          "criada_em": {
+            "type": "string",
+            "title": "Criada Em"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "cliente",
+          "estado",
+          "total_mt",
+          "motivo",
+          "itens",
+          "passos",
+          "criada_em"
+        ],
+        "title": "Encomenda"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Item": {
+        "properties": {
+          "produto_id": {
+            "type": "string",
+            "title": "Produto Id",
+            "examples": [
+              "P001"
+            ]
+          },
+          "quantidade": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Quantidade",
+            "examples": [
+              1
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "produto_id",
+          "quantidade"
+        ],
+        "title": "Item"
+      },
+      "ListaProdutos": {
+        "properties": {
+          "fonte": {
+            "type": "string",
+            "title": "Fonte"
+          },
+          "produtos": {
+            "items": {
+              "$ref": "#/components/schemas/Produto"
+            },
+            "type": "array",
+            "title": "Produtos"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fonte",
+          "produtos"
+        ],
+        "title": "ListaProdutos"
+      },
+      "Login": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username",
+            "examples": [
+              "cliente1"
+            ]
+          },
+          "password": {
+            "type": "string",
+            "title": "Password",
+            "examples": [
+              "Cliente#2026"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Login"
+      },
+      "NovaEncomenda": {
+        "properties": {
+          "itens": {
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Itens"
+          },
+          "cartao": {
+            "type": "string",
+            "title": "Cartao",
+            "description": "4000000000000002 e sempre recusado",
+            "examples": [
+              "4111111111111111"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "itens",
+          "cartao"
+        ],
+        "title": "NovaEncomenda"
+      },
+      "NovoStock": {
+        "properties": {
+          "stock": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Stock"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stock"
+        ],
+        "title": "NovoStock"
+      },
+      "Produto": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nome": {
+            "type": "string",
+            "title": "Nome"
+          },
+          "preco_mt": {
+            "type": "number",
+            "title": "Preco Mt"
+          },
+          "stock": {
+            "type": "integer",
+            "title": "Stock"
+          },
+          "imagem": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imagem"
+          },
+          "fonte": {
+            "type": "string",
+            "title": "Fonte",
+            "description": "Servidor de base de dados que respondeu a leitura"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nome",
+          "preco_mt",
+          "stock",
+          "fonte"
+        ],
+        "title": "Produto"
+      },
+      "Relatorio": {
+        "properties": {
+          "ficheiro": {
+            "type": "string",
+            "title": "Ficheiro"
+          },
+          "pagamentos": {
+            "type": "integer",
+            "title": "Pagamentos"
+          },
+          "total_mt": {
+            "type": "number",
+            "title": "Total Mt"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ficheiro",
+          "pagamentos",
+          "total_mt"
+        ],
+        "title": "Relatorio"
+      },
+      "Token": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type"
+          },
+          "expires_in": {
+            "type": "integer",
+            "title": "Expires In"
+          },
+          "papel": {
+            "type": "string",
+            "title": "Papel"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "token_type",
+          "expires_in",
+          "papel"
+        ],
+        "title": "Token"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
