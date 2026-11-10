@@ -6,9 +6,9 @@ test_pagamento_recusado_devolve_o_stock (test_saga.TesteSaga.test_pagamento_recu
 test_pagamentos_em_baixo_fica_pendente_e_a_recuperacao_conclui (test_saga.TesteSaga.test_pagamentos_em_baixo_fica_pendente_e_a_recuperacao_conclui) ... ok
 test_passos_ficam_registados (test_saga.TesteSaga.test_passos_ficam_registados) ... ok
 test_stock_insuficiente_rejeita_sem_compensar (test_saga.TesteSaga.test_stock_insuficiente_rejeita_sem_compensar) ... ok
-test_01_compra_concluida_pelos_tres_servicos (test_grpc.TesteGrpc.test_01_compra_concluida_pelos_tres_servicos) ... 2026-11-10 17:00:23,884 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=dbf33a9c6fd44acb9e4c78b9d0563680 cliente=cliente1 valor=1000 aprovado=True motivo=
+test_01_compra_concluida_pelos_tres_servicos (test_grpc.TesteGrpc.test_01_compra_concluida_pelos_tres_servicos) ... 2026-11-10 18:30:43,349 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=f73a7e14dde04667820184ba97dd358e cliente=cliente1 valor=1000 aprovado=True motivo=
 ok
-test_02_pagamento_recusado_compensa_o_inventario (test_grpc.TesteGrpc.test_02_pagamento_recusado_compensa_o_inventario) ... 2026-11-10 17:00:24,029 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=a27da1d886cf4a35ad5466c2f3337ada cliente=cliente1 valor=1000 aprovado=False motivo=cartao recusado pelo emissor
+test_02_pagamento_recusado_compensa_o_inventario (test_grpc.TesteGrpc.test_02_pagamento_recusado_compensa_o_inventario) ... 2026-11-10 18:30:43,539 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=fbb51ddf6a424aed9b0701cccb0bd450 cliente=cliente1 valor=1000 aprovado=False motivo=cartao recusado pelo emissor
 ok
 test_03_stock_insuficiente_e_rejeitado (test_grpc.TesteGrpc.test_03_stock_insuficiente_e_rejeitado) ... ok
 test_10_sem_token_e_recusado (test_grpc.TesteGrpc.test_10_sem_token_e_recusado) ... ok
@@ -17,33 +17,33 @@ test_12_token_assinado_por_outra_chave_e_recusado (test_grpc.TesteGrpc.test_12_t
 test_13_papel_errado_e_recusado (test_grpc.TesteGrpc.test_13_papel_errado_e_recusado) ... ok
 test_20_servico_nao_autorizado_e_recusado (test_grpc.TesteGrpc.test_20_servico_nao_autorizado_e_recusado) ... ok
 test_21_certificado_de_outra_ca_nao_liga (test_grpc.TesteGrpc.test_21_certificado_de_outra_ca_nao_liga) ... WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
-E0000 00:00:1794322824.660440    4088 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
-E0000 00:00:1794322824.667796   11084 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
+E0000 00:00:1794328244.363883   12316 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
+E0000 00:00:1794328244.374946   12316 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:1000007d:SSL routines:OPENSSL_internal:CERTIFICATE_VERIFY_FAILED
 ok
-test_22_sem_certificado_de_cliente_nao_liga (test_grpc.TesteGrpc.test_22_sem_certificado_de_cliente_nao_liga) ... E0000 00:00:1794322824.758516    4088 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000c0:SSL routines:OPENSSL_internal:PEER_DID_NOT_RETURN_A_CERTIFICATE
-E0000 00:00:1794322824.762977    4088 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000c0:SSL routines:OPENSSL_internal:PEER_DID_NOT_RETURN_A_CERTIFICATE
+test_22_sem_certificado_de_cliente_nao_liga (test_grpc.TesteGrpc.test_22_sem_certificado_de_cliente_nao_liga) ... E0000 00:00:1794328244.530223   14504 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000c0:SSL routines:OPENSSL_internal:PEER_DID_NOT_RETURN_A_CERTIFICATE
+E0000 00:00:1794328244.536943   14504 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000c0:SSL routines:OPENSSL_internal:PEER_DID_NOT_RETURN_A_CERTIFICATE
 ok
-test_23_sem_tls_nao_liga (test_grpc.TesteGrpc.test_23_sem_tls_nao_liga) ... E0000 00:00:1794322824.870313   11084 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER
-E0000 00:00:1794322824.871100    4088 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER
+test_23_sem_tls_nao_liga (test_grpc.TesteGrpc.test_23_sem_tls_nao_liga) ... E0000 00:00:1794328244.788406   12316 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER
+E0000 00:00:1794328244.791312   14504 ssl_transport_security.cc:1654] Handshake failed with fatal error SSL_ERROR_SSL: error:100000f7:SSL routines:OPENSSL_internal:WRONG_VERSION_NUMBER
 ok
-test_30_relatorio_e_escrito_na_pasta_partilhada (test_grpc.TesteGrpc.test_30_relatorio_e_escrito_na_pasta_partilhada) ... 2026-11-10 17:00:25,154 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=d53f08c437834a5ea71f765a365c919e cliente=cliente1 valor=1000 aprovado=True motivo=
-2026-11-10 17:00:25,216 [pagamentos] [ThreadPoolExecutor-1_0] [OP=RELATORIO] relatorios/faturacao-2026-11-10-170025.csv pagamentos=3 total=2000
+test_30_relatorio_e_escrito_na_pasta_partilhada (test_grpc.TesteGrpc.test_30_relatorio_e_escrito_na_pasta_partilhada) ... 2026-11-10 18:30:45,137 [pagamentos] [ThreadPoolExecutor-1_0] [OP=PAGAMENTO] saga=08e371a5de584a61a7371d45d23fc0ea cliente=cliente1 valor=1000 aprovado=True motivo=
+2026-11-10 18:30:45,244 [pagamentos] [ThreadPoolExecutor-1_0] [OP=RELATORIO] relatorios/faturacao-2026-11-10-183045.csv pagamentos=3 total=2000
 ok
-test_cliente_nao_pode_carregar_imagens (test_identidade_gateway.TesteGateway.test_cliente_nao_pode_carregar_imagens) ... I0000 00:00:1794322825.238439    4008 chttp2_transport.cc:1183] ipv6:%5B::1%5D:52077: Got goaway [2] err=UNAVAILABLE:GOAWAY received; Error code: 2; Debug Text: Cancelling all calls {grpc_status:14, http2_error:2, created_time:"2026-11-10T15:00:25.2210847+00:00"}
+test_cliente_nao_pode_carregar_imagens (test_identidade_gateway.TesteGateway.test_cliente_nao_pode_carregar_imagens) ... I0000 00:00:1794328245.294156   17108 chttp2_transport.cc:1183] ipv6:%5B::1%5D:58741: Got goaway [2] err=UNAVAILABLE:GOAWAY received; Error code: 2; Debug Text: Cancelling all calls {grpc_status:14, http2_error:2, created_time:"2026-11-10T16:30:45.2574801+00:00"}
 D:\3ANO\SDP VSCODE\Reposicao\.venv\Lib\site-packages\starlette\testclient.py:40: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
   _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
 ok
 test_openapi_documenta_a_api_publica (test_identidade_gateway.TesteGateway.test_openapi_documenta_a_api_publica) ... ok
 test_pedido_sem_token_devolve_401 (test_identidade_gateway.TesteGateway.test_pedido_sem_token_devolve_401) ... ok
-test_login_emite_jwt_valido (test_identidade_gateway.TesteIdentidade.test_login_emite_jwt_valido) ... 2026-11-10 17:00:27,825 [identidade] [AnyIO worker thread] [OP=TOKEN_EMITIDO] sub=cliente1 papel=cliente validade=1800s
+test_login_emite_jwt_valido (test_identidade_gateway.TesteIdentidade.test_login_emite_jwt_valido) ... 2026-11-10 18:30:48,239 [identidade] [AnyIO worker thread] [OP=TOKEN_EMITIDO] sub=cliente1 papel=cliente validade=1800s
 ok
 test_sem_certificado_de_cliente_a_ligacao_falha (test_identidade_gateway.TesteIdentidade.test_sem_certificado_de_cliente_a_ligacao_falha) ... ok
-test_senha_errada_e_recusada (test_identidade_gateway.TesteIdentidade.test_senha_errada_e_recusada) ... 2026-11-10 17:00:32,039 [identidade] [AnyIO worker thread] [OP=LOGIN_RECUSADO] utilizador=cliente1
+test_senha_errada_e_recusada (test_identidade_gateway.TesteIdentidade.test_senha_errada_e_recusada) ... 2026-11-10 18:30:52,486 [identidade] [AnyIO worker thread] [OP=LOGIN_RECUSADO] utilizador=cliente1
 ok
-test_token_de_servico (test_identidade_gateway.TesteIdentidade.test_token_de_servico) ... 2026-11-10 17:00:34,139 [identidade] [AnyIO worker thread] [OP=TOKEN_EMITIDO] sub=svc-encomendas papel=servico validade=600s
+test_token_de_servico (test_identidade_gateway.TesteIdentidade.test_token_de_servico) ... 2026-11-10 18:30:54,589 [identidade] [AnyIO worker thread] [OP=TOKEN_EMITIDO] sub=svc-encomendas papel=servico validade=600s
 ok
 
 ----------------------------------------------------------------------
-Ran 27 tests in 10.502s
+Ran 27 tests in 11.544s
 
 OK

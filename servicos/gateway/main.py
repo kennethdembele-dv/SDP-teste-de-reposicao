@@ -124,7 +124,7 @@ CODIGOS_HTTP = {
 def chamar(funcao, pedido, token):
     """Faz a chamada gRPC e converte o erro gRPC no codigo HTTP correspondente."""
     try:
-        return funcao(pedido, timeout=10, metadata=seguranca.metadados_token(token))
+        return funcao(pedido, timeout=30, metadata=seguranca.metadados_token(token))
     except grpc.RpcError as e:
         estado = CODIGOS_HTTP.get(e.code(), 502)
         log.warning("[OP=ERRO_GRPC] %s -> HTTP %d: %s", e.code().name, estado, e.details())

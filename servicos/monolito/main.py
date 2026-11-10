@@ -63,4 +63,4 @@ def encomendar(e: NovaEncomenda):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8090, workers=1)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORTA", "8090")), workers=1)

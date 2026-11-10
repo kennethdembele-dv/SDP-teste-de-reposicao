@@ -1,0 +1,14 @@
+# carga.txt - gerado em 2026-11-10T18:28:04
+Cenario                           Pedido              Pedidos  Falhas  Mediana    p95    Media   Ped/s
+Monolito (centralizado)           GET /produtos          6897       0        5     11      5.7   116.3
+Monolito (centralizado)           POST /encomendas       2405       0        6     14      7.4    40.6
+Monolito (centralizado)           Aggregated             9302       0        5     12      6.1   156.9
+Microsservicos                    /api/v1/auth/token       50       0   2700.0   4700   2627.1     0.8
+Microsservicos                    GET /produtos          5909       0       12     84     28.6    99.0
+Microsservicos                    POST /encomendas       2010       0       39    310     75.5    33.7
+Microsservicos                    Aggregated             7969       0       17    150     56.7   133.5
+Microsservicos + 20 ms de rede    /api/v1/auth/token       50       0   2200.0   4700   2725.1     0.8
+Microsservicos + 20 ms de rede    GET /produtos          4765       0       80    120     87.2    80.1
+Microsservicos + 20 ms de rede    POST /encomendas       1653       0    210.0    300    224.7    27.8
+Microsservicos + 20 ms de rede    Aggregated             6468       0       90    250    142.7   108.7
+(tempos em ms)

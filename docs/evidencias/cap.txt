@@ -1,0 +1,39 @@
+# cap.txt - executado em 2026-11-10T18:24:16 (modo nativo)
+
+== 1. Situacao normal ==
+  18:24:17 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
+  18:24:17 GET HTTP 200 fonte=replica1  5 produtos (5 ms)
+  18:24:17 GET HTTP 200 fonte=replica2  5 produtos (4 ms)
+  18:24:17 GET HTTP 200 fonte=replica1  5 produtos (14 ms)
+  POST compra: HTTP 200 estado=CONCLUIDA
+
+== 2. No master derrubado (paragem imediata do pg-master) ==
+  18:24:19 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
+  18:24:19 GET HTTP 200 fonte=replica1  5 produtos (7 ms)
+  18:24:19 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
+  18:24:19 GET HTTP 200 fonte=replica1  5 produtos (6 ms)
+  POST compra: HTTP 503 UNAVAILABLE: base de dados das encomendas indisponivel
+  -> leituras continuam nas replicas (A); compras recusadas para nao haver escritas divergentes (C)
+  master de volta, POST compra: HTTP 200 estado=CONCLUIDA
+
+== 3. Leitura obsoleta: replicacao pausada nas duas replicas ==
+  master: stock de P004 alterado de 307 para 314 (HTTP 200)
+  valor lido directamente no master: 314
+  18:24:39 GET HTTP 200 fonte=replica1  stock=307 (8 ms)
+  18:24:39 GET HTTP 200 fonte=replica2  stock=307 (6 ms)
+  18:24:39 GET HTTP 200 fonte=replica1  stock=307 (5 ms)
+  -> as replicas respondem com o valor antigo: disponiveis, mas so com consistencia eventual
+  replicacao retomada:
+  18:24:41 GET HTTP 200 fonte=replica2  stock=314 (5 ms)
+  18:24:41 GET HTTP 200 fonte=replica1  stock=314 (4 ms)
+
+== 4. Particao de rede: pg-replica1 isolada do inventario ==
+  18:24:42 GET HTTP 200 fonte=replica2  5 produtos (28 ms)
+  18:24:44 GET HTTP 200 fonte=replica2  5 produtos (2005 ms)
+  18:24:44 GET HTTP 200 fonte=replica2  5 produtos (5 ms)
+  18:24:46 GET HTTP 200 fonte=replica2  5 produtos (2004 ms)
+  log inventario: 2026/11/10 18:24:44.434980 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
+  log inventario: 2026/11/10 18:24:46.444566 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
+  particao terminada
+  18:24:49 GET HTTP 200 fonte=replica2  5 produtos (5 ms)
+  18:24:49 GET HTTP 200 fonte=replica1  5 produtos (81 ms)

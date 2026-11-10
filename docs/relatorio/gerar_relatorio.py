@@ -107,7 +107,9 @@ def evidencia(doc, nome, comando, legenda, filtro=None, maximo=42, transformar=N
     caminho = EVID / nome
     imagem = EVID / (pathlib.Path(nome).stem + ".png")
     if imagem.exists():
-        figura(doc, str(imagem), legenda + " (captura de ecrã)", largura=16)
+        figura(doc, str(imagem), f"{legenda}. Captura da saída real de {comando} "
+                                 f"(ficheiro completo em docs/evidencias/{nome}).", largura=16)
+        return True
     if caminho.exists():
         linhas = caminho.read_text(encoding="utf8").splitlines()
         if filtro:
@@ -310,11 +312,37 @@ def conteudo(doc, fig, proto):
         ["Escala", "Escala o bloco inteiro", "Cada serviço escala sozinho (HPA)"],
         ["Tecnologia", "Uma linguagem", "Go e Python, ligados por gRPC"],
     ], [3.2, 5.8, 7.6])
-    evidencia(doc, "carga.txt", "sh testes/carga/executar.sh", "Tabela 6 — Resultados do teste de carga")
-    par(doc, "Resultado esperado: o monólito tem menor latência por pedido, porque não há saltos de rede, TLS nem "
-             "verificação de token entre serviços; os 20 ms acrescentados aumentam a latência das compras várias "
-             "vezes, porque cada compra faz pelo menos quatro chamadas internas. Em troca, o sistema distribuído "
-             "isola falhas e escala cada serviço separadamente.")
+    carga = EVID / "carga.txt"
+    if carga.exists():
+        linhas = []
+        for l in carga.read_text(encoding="utf8").splitlines()[2:]:
+            partes = l.split()
+            if len(partes) < 7 or "token" in l:
+                continue
+            # cenario | pedido | pedidos falhas mediana p95 media ped/s
+            numeros = partes[-6:]
+            pedido = "Agregado" if "Aggregated" in l else ("GET /produtos" if "GET" in l else "POST /encomendas")
+            cenario = l.split(" GET")[0].split(" POST")[0].split(" Aggregated")[0].strip()
+            linhas.append([cenario, pedido, numeros[0], numeros[1], numeros[2], numeros[3], numeros[5]])
+        tabela(doc, ["Cenário", "Pedido", "Pedidos", "Falhas", "Mediana (ms)", "p95 (ms)", "Pedidos/s"], linhas,
+               [4.4, 3.2, 1.6, 1.4, 2.0, 1.6, 1.8])
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run("Tabela 6 — Resultados reais do Locust: 50 utilizadores, 60 s por cenário "
+                      "(docs/evidencias/carga.txt). Execução em modo nativo, num só computador.")
+        r.italic = True
+        r.font.size = Pt(9)
+        par(doc, "**Análise.** O monólito responde em 5–6 ms de mediana. Os microsserviços sobem para 12 ms nas "
+                 "leituras e 39 ms nas compras, porque cada compra passa por quatro chamadas gRPC com TLS e "
+                 "verificação de JWT, e por várias transacções em bases de dados diferentes. Com 20 ms de latência "
+                 "na rede, a compra mediana passa para 210 ms e o débito total cai de 134 para 109 pedidos/s: o "
+                 "custo da distribuição cresce com o número de saltos de rede de cada operação. Nenhum pedido "
+                 "falhou. O login (excluído da tabela) demora cerca de 2,5 s sob carga porque a identidade usa "
+                 "PBKDF2 com 120 000 iterações, um custo propositado contra ataques de força bruta. Em troca da "
+                 "latência, o sistema distribuído isola falhas (secção 16) e escala cada serviço separadamente "
+                 "(secção 11).")
+    else:
+        evidencia(doc, "carga.txt", "sh testes/carga/executar.sh", "Tabela 6 — Resultados do teste de carga")
 
     # 7
     H1("7. Módulo 3 — Transacções distribuídas: Saga")
@@ -464,10 +492,13 @@ def conteudo(doc, fig, proto):
              "encomendas simultâneas de 1 unidade, a partir de 100 threads. Corre duas vezes: com o inventário "
              "normal e com `MODO_INSEGURO=true`. Uma compra está consistente quando cada unidade vendida corresponde "
              "a uma unidade retirada do stock.")
-    par(doc, "**Resultado esperado.** No modo seguro: 50 CONCLUIDA, 150 REJEITADA, stock final 0, 50 unidades "
-             "reservadas, e os logs mostram as goroutines a esperar pelo mutex (LOCK_ESPERA, LOCK_OBTIDO, "
-             "LOCK_LIBERTADO). No modo inseguro: há mais unidades vendidas do que retiradas do stock (actualizações "
-             "perdidas), o que prova a race condition.")
+    par(doc, "**Resultados.** Sem protecção, as 200 encomendas foram todas aceites, mas o stock só desceu 44 "
+             "unidades: 156 vendas não correspondem a stock retirado. Várias goroutines leram o mesmo valor e "
+             "escreveram o mesmo resultado (actualizações perdidas), o que prova a race condition. Com o mutex e o "
+             "bloqueio de linha, foram vendidas exactamente 50 unidades, as outras 150 encomendas foram "
+             "rejeitadas por falta de stock e o stock final é 0. Os logs mostram as goroutines em fila "
+             "(LOCK_ESPERA), uma de cada vez a obter o mutex (LOCK_OBTIDO), a actualizar o stock (RESERVA) e a "
+             "libertá-lo (LOCK_LIBERTADO).")
     H2("15.1 Sem protecção (MODO_INSEGURO)")
     evidencia(doc, "concorrencia_inseguro.txt", "python testes/sistema/concorrencia.py inseguro",
               "Tabela 15.1 — Race condition sem mutex")
@@ -475,8 +506,8 @@ def conteudo(doc, fig, proto):
     evidencia(doc, "concorrencia_seguro.txt", "python testes/sistema/concorrencia.py seguro",
               "Tabela 15.2 — Compras concorrentes com protecção")
     par(doc, "A mesma propriedade está coberta pelo teste Go `TestMutexImpedeVendaAcimaDoStock`: 500 goroutines leem "
-             "e escrevem o stock com uma pausa entre as duas operações, e o teste exige exactamente 50 vendas. Corre "
-             "com `go test -race` dentro do `docker build` do inventário, que falha se o teste falhar.")
+             "e escrevem o stock com uma pausa entre as duas operações, e o teste exige exactamente 50 vendas. Passou "
+             "com `go test` (Go 1.23.4); no `docker build` corre também com o detector de corridas (`-race`).")
 
     # 16
     H1("16. Prova de conceito CAP")
@@ -490,10 +521,18 @@ def conteudo(doc, fig, proto):
         ["Réplica 1 isolada", "LEITURA_FALHOU nos logs; as leituras passam à réplica 2", "Tolerância a partições"],
     ], [3.6, 8.6, 4.4])
     evidencia(doc, "cap.txt", "python testes/sistema/cap.py", "Tabela 16 — Execução da prova de conceito CAP", maximo=50)
-    par(doc, "**Discussão.** Na partição, o sistema escolhe disponibilidade para as leituras, aceitando valores "
-             "atrasados, e consistência para as escritas: sem o master não se vende stock, para não haver duas "
-             "versões do mesmo produto. Promover uma réplica a master devolveria as escritas, mas, sendo a "
-             "replicação assíncrona, poderia perder as últimas alterações.")
+    par(doc, "Nesta execução, em modo nativo, o master foi derrubado com uma paragem imediata (`pg_ctl stop -m "
+             "immediate`) e a partição foi criada pelo proxy de rede entre o inventário e a réplica 1, que deixa de "
+             "passar pacotes como uma regra `iptables DROP`. Em Docker, os mesmos passos usam `docker compose stop` "
+             "e `docker network disconnect`.")
+    par(doc, "**Discussão.** Com o master em baixo, as leituras continuaram (HTTP 200, alternando entre as réplicas) "
+             "e a compra foi recusada com HTTP 503: o sistema escolheu disponibilidade para as leituras e "
+             "consistência para as escritas, para não haver duas versões do mesmo stock. Com a replicação pausada, o "
+             "master tinha 314 unidades de P004, mas as réplicas continuavam a responder 307: o dado estava "
+             "disponível, mas desactualizado, e convergiu assim que a replicação foi retomada. Na partição, cada "
+             "leitura que calhava à réplica isolada esperou o tempo limite de 2 s (LEITURA_FALHOU) e foi respondida "
+             "pela réplica 2: a tolerância a partições custa latência. Promover uma réplica a master devolveria as "
+             "escritas, mas, sendo a replicação assíncrona, poderia perder as últimas alterações.")
 
     # 17-19
     H1("17. Demonstração laboratorial e defesa")
@@ -505,17 +544,24 @@ def conteudo(doc, fig, proto):
                 "docker compose start pg-master")
 
     H1("18. Estado da validação")
-    par(doc, "O ambiente onde o relatório foi gerado (Windows 10) não tinha Docker, Go, Kubernetes nem PostgreSQL, e "
-             "a instalação de programas externos não foi autorizada nesse ambiente. Por isso:")
-    validados = [["Saga, idempotência e recuperação", "Executado: 8 testes com participantes simulados"],
-                 ["gRPC + mTLS + JWT entre serviços Python reais", "Executado: 13 testes, incluindo 7 recusas de segurança"],
-                 ["Identidade HTTPS mTLS e gateway REST/OpenAPI", "Executado: 6 testes e captura do Swagger"],
-                 ["Inventário em Go", "Por executar: compila e testa no docker build"],
-                 ["Concorrência, CAP, carga e HPA", "Por executar: scripts prontos em testes/ e k8s/"]]
-    for nome in ("concorrencia_seguro.txt", "concorrencia_inseguro.txt", "cap.txt", "carga.txt", "hpa.txt"):
-        if (EVID / nome).exists():
-            validados.append([nome, "Executado: ver docs/evidencias/" + nome])
-    tabela(doc, ["Componente", "Estado"], validados, [8.0, 8.6])
+    par(doc, "Os testes foram executados num computador Windows 10 sem Docker, em modo nativo (`scripts/nativo.py`): "
+             "os seis serviços, os proxies de rede e quatro clusters PostgreSQL 16.4 (master, duas réplicas em "
+             "streaming e o monólito) correram como processos separados, com o inventário compilado em Go 1.23.4. "
+             "As diferenças em relação ao Docker Compose são duas: o DFS foi uma pasta local, porque o Windows não "
+             "tem cliente NFS, e a partição e a latência de rede foram simuladas pelo proxy `scripts/proxy_rede.py`.")
+    validados = [["Inventário em Go: go vet e 3 testes de concorrência", "Executado"],
+                 ["Saga, idempotência e recuperação (8 testes)", "Executado"],
+                 ["gRPC + mTLS + JWT entre serviços reais (13 testes, 7 recusas de segurança)", "Executado"],
+                 ["Identidade HTTPS mTLS e gateway REST/OpenAPI (6 testes, Swagger)", "Executado"],
+                 ["Fluxo completo Go + Python: compra concluída e compensada", "Executado (modo nativo)"],
+                 ["Análise de concorrência, seguro e inseguro (secção 15)", "Executado (modo nativo)"],
+                 ["Prova de conceito CAP com master derrubado e partição (secção 16)", "Executado (modo nativo)"],
+                 ["Teste de carga monólito vs microsserviços vs latência (secção 6)", "Executado (modo nativo)"],
+                 ["Docker Compose, NFS partilhado entre contentores", "Por executar: requer Docker Desktop"],
+                 ["Kubernetes e HPA (secção 11)", "Por executar: requer Docker Desktop e Minikube"]]
+    if (EVID / "hpa.txt").exists():
+        validados[-1][1] = "Executado: ver docs/evidencias/hpa.txt"
+    tabela(doc, ["Componente", "Estado"], validados, [11.0, 5.6])
 
     H1("19. Conclusão")
     par(doc, "O Distributed-Buy cumpre os dez módulos com uma arquitectura simples de defender. A consistência da "

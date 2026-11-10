@@ -26,15 +26,17 @@ class RepositorioMemoria:
 
 
 class RepositorioPostgres:
-    def __init__(self, dsn: str):
-        import psycopg
+    def __init__(self, dsn):
         from psycopg.rows import dict_row
-        self.psycopg = psycopg
-        self.dict_row = dict_row
-        self.dsn = dsn
+        from psycopg_pool import ConnectionPool
+        # Pool de ligacoes: abrir uma ligacao nova por operacao e lento (sobretudo em Windows).
+        # check_connection descarta ligacoes partidas, por exemplo depois de o master reiniciar.
+        self.pool = ConnectionPool(dsn, min_size=2, max_size=20, timeout=5, open=True,
+                                   kwargs={"row_factory": dict_row, "connect_timeout": 3},
+                                   check=ConnectionPool.check_connection)
 
     def _ligar(self):
-        return self.psycopg.connect(self.dsn, row_factory=self.dict_row, connect_timeout=3)
+        return self.pool.connection()
 
     def obter(self, saga_id):
         with self._ligar() as c:
