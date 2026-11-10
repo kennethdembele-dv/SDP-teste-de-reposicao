@@ -536,6 +536,8 @@ def conteudo(doc, fig, proto):
 
     # 17-19
     H1("17. Demonstração laboratorial e defesa")
+    par(doc, f"**Código fonte:** {REPOSITORIO.removesuffix('.git')} (repositório Git com o docker-compose.yml, os "
+             "manifestos Kubernetes, os testes e as evidências).")
     par(doc, "O guião completo está em `docs/GUIAO_DEMONSTRACAO.md`. A demonstração pedida no enunciado é derrubar um "
              "nó de base de dados e mostrar que o sistema continua a ler os produtos [E]:")
     codigo(doc, "docker compose stop pg-master\n"
