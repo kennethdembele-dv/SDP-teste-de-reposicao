@@ -1,7 +1,7 @@
-# concorrencia_seguro.txt - executado em 2026-11-10T18:24:05 (modo nativo)
+# concorrencia_seguro.txt - executado em 2026-11-10T21:33:26 (modo docker)
 Modo do inventario: seguro. 200 encomendas simultaneas (100 threads) de 1 unidade de P002, com stock inicial 50.
 
-Duracao: 3.5 s
+Duracao: 4.1 s
 Estado final das encomendas:
   CONCLUIDA              50
   REJEITADA              150
@@ -13,40 +13,40 @@ Unidades vendidas (reservas) ..... 50
 CONSISTENTE: cada unidade vendida corresponde a uma unidade retirada do stock
 
 Excerto dos logs do inventario durante o teste:
-  2026/11/10 18:24:11.908124 [inventario] [OP=LOCK_ESPERA] pedido=1 saga=d274c88174b649a3837f9ebe58682a5c produtos=[P002]
-  2026/11/10 18:24:11.908124 [inventario] [OP=LOCK_ESPERA] pedido=2 saga=4932374805284a0ea2145ed5bc849d8b produtos=[P002]
-  2026/11/10 18:24:11.908124 [inventario] [OP=LOCK_OBTIDO] pedido=1 saga=d274c88174b649a3837f9ebe58682a5c
-  2026/11/10 18:24:11.908124 [inventario] [OP=LOCK_ESPERA] pedido=3 saga=b8cf34a6f2b04990932af08c430f4e47 produtos=[P002]
-  2026/11/10 18:24:11.908124 [inventario] [OP=LOCK_ESPERA] pedido=4 saga=f50be9bd5ebd4fc0b408853d3ed6aed5 produtos=[P002]
-  2026/11/10 18:24:11.909336 [inventario] [OP=LOCK_ESPERA] pedido=5 saga=dd4920cd62fe4da48a42a5cca4554b3f produtos=[P002]
-  2026/11/10 18:24:11.909849 [inventario] [OP=LOCK_ESPERA] pedido=6 saga=ea5662ce9ef54f61b7093fd8b553b60a produtos=[P002]
-  2026/11/10 18:24:11.915601 [inventario] [OP=LOCK_ESPERA] pedido=7 saga=365f7151340d4842ac80777d4bc92544 produtos=[P002]
-  2026/11/10 18:24:11.915601 [inventario] [OP=LOCK_ESPERA] pedido=8 saga=da9ec59f5aa5472685434ab685e0f2e2 produtos=[P002]
-  2026/11/10 18:24:11.922233 [inventario] [OP=LOCK_ESPERA] pedido=9 saga=72517cea855a4f399ae6eeb4f71ad23c produtos=[P002]
-  2026/11/10 18:24:11.924848 [inventario] [OP=RESERVA] pedido=1 saga=d274c88174b649a3837f9ebe58682a5c produto=P002 stock 50 -> 49
-  2026/11/10 18:24:11.926847 [inventario] [OP=LOCK_LIBERTADO] pedido=1 saga=d274c88174b649a3837f9ebe58682a5c
-  2026/11/10 18:24:11.928540 [inventario] [OP=LOCK_OBTIDO] pedido=2 saga=4932374805284a0ea2145ed5bc849d8b
-  2026/11/10 18:24:11.929053 [inventario] [OP=LOCK_ESPERA] pedido=10 saga=d8103b786f0a481fa2d518621dce7c23 produtos=[P002]
-  2026/11/10 18:24:11.930048 [inventario] [OP=LOCK_ESPERA] pedido=11 saga=083a977d0366441aa7de5b9fd8348107 produtos=[P002]
-  2026/11/10 18:24:11.930449 [inventario] [OP=RESERVA] pedido=2 saga=4932374805284a0ea2145ed5bc849d8b produto=P002 stock 49 -> 48
-  2026/11/10 18:24:11.933957 [inventario] [OP=LOCK_LIBERTADO] pedido=2 saga=4932374805284a0ea2145ed5bc849d8b
-  2026/11/10 18:24:11.934954 [inventario] [OP=LOCK_OBTIDO] pedido=3 saga=b8cf34a6f2b04990932af08c430f4e47
-  2026/11/10 18:24:11.936191 [inventario] [OP=RESERVA] pedido=3 saga=b8cf34a6f2b04990932af08c430f4e47 produto=P002 stock 48 -> 47
-  2026/11/10 18:24:11.937698 [inventario] [OP=LOCK_LIBERTADO] pedido=3 saga=b8cf34a6f2b04990932af08c430f4e47
-  2026/11/10 18:24:11.937698 [inventario] [OP=LOCK_OBTIDO] pedido=4 saga=f50be9bd5ebd4fc0b408853d3ed6aed5
-  2026/11/10 18:24:11.942900 [inventario] [OP=LOCK_ESPERA] pedido=12 saga=3d322c836b7849029ddff0138733d54b produtos=[P002]
-  2026/11/10 18:24:11.942900 [inventario] [OP=LOCK_ESPERA] pedido=13 saga=5a86c8afcb2a4b8b953f36b04e991e5d produtos=[P002]
-  2026/11/10 18:24:11.942900 [inventario] [OP=RESERVA] pedido=4 saga=f50be9bd5ebd4fc0b408853d3ed6aed5 produto=P002 stock 47 -> 46
-  2026/11/10 18:24:11.944895 [inventario] [OP=LOCK_LIBERTADO] pedido=4 saga=f50be9bd5ebd4fc0b408853d3ed6aed5
-  2026/11/10 18:24:11.944895 [inventario] [OP=LOCK_OBTIDO] pedido=5 saga=dd4920cd62fe4da48a42a5cca4554b3f
-  2026/11/10 18:24:11.951642 [inventario] [OP=LOCK_ESPERA] pedido=14 saga=118691d016cb46a4a02aad017443e765 produtos=[P002]
-  2026/11/10 18:24:11.951642 [inventario] [OP=LOCK_ESPERA] pedido=15 saga=437077c906424702837b99fbf5cbfe7e produtos=[P002]
-  2026/11/10 18:24:11.954346 [inventario] [OP=RESERVA] pedido=5 saga=dd4920cd62fe4da48a42a5cca4554b3f produto=P002 stock 46 -> 45
-  2026/11/10 18:24:11.956881 [inventario] [OP=LOCK_LIBERTADO] pedido=5 saga=dd4920cd62fe4da48a42a5cca4554b3f
-  2026/11/10 18:24:11.956881 [inventario] [OP=LOCK_OBTIDO] pedido=6 saga=ea5662ce9ef54f61b7093fd8b553b60a
-  2026/11/10 18:24:11.969797 [inventario] [OP=LOCK_ESPERA] pedido=16 saga=f85e07125bc34b1e9cb4bbdc89a6b31a produtos=[P002]
-  2026/11/10 18:24:11.970796 [inventario] [OP=RESERVA] pedido=6 saga=ea5662ce9ef54f61b7093fd8b553b60a produto=P002 stock 45 -> 44
-  2026/11/10 18:24:11.971143 [inventario] [OP=LOCK_ESPERA] pedido=17 saga=ee0ef4b374ab4601be510084eb539430 produtos=[P002]
-  2026/11/10 18:24:11.971654 [inventario] [OP=LOCK_LIBERTADO] pedido=6 saga=ea5662ce9ef54f61b7093fd8b553b60a
-  2026/11/10 18:24:11.971654 [inventario] [OP=LOCK_OBTIDO] pedido=7 saga=365f7151340d4842ac80777d4bc92544
+  inventario-1  | 2026/11/10 19:33:30.440127 [inventario] [OP=LOCK_ESPERA] pedido=1 saga=f0dd6f178d444fdb938f31337732b87a produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.440156 [inventario] [OP=LOCK_OBTIDO] pedido=1 saga=f0dd6f178d444fdb938f31337732b87a
+  inventario-1  | 2026/11/10 19:33:30.440388 [inventario] [OP=LOCK_ESPERA] pedido=2 saga=9204831efbac410aa7d03036c429874f produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.440545 [inventario] [OP=LOCK_ESPERA] pedido=3 saga=ad6c70381f774cb197bd9d4b210294f7 produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.440668 [inventario] [OP=LOCK_ESPERA] pedido=4 saga=e34f07ce0612412087f5b340fb7e7d02 produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.440784 [inventario] [OP=LOCK_ESPERA] pedido=5 saga=6d28ac501c684f2cb84d3ead30c32a2e produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.452127 [inventario] [OP=RESERVA] pedido=1 saga=f0dd6f178d444fdb938f31337732b87a produto=P002 stock 50 -> 49
+  inventario-1  | 2026/11/10 19:33:30.480023 [inventario] [OP=LOCK_LIBERTADO] pedido=1 saga=f0dd6f178d444fdb938f31337732b87a
+  inventario-1  | 2026/11/10 19:33:30.480198 [inventario] [OP=LOCK_OBTIDO] pedido=2 saga=9204831efbac410aa7d03036c429874f
+  inventario-1  | 2026/11/10 19:33:30.505081 [inventario] [OP=LOCK_ESPERA] pedido=6 saga=17d58199e04340eabc41b8b8946c55d7 produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.505881 [inventario] [OP=RESERVA] pedido=2 saga=9204831efbac410aa7d03036c429874f produto=P002 stock 49 -> 48
+  inventario-1  | 2026/11/10 19:33:30.512840 [inventario] [OP=LOCK_ESPERA] pedido=7 saga=aefeb48ee6434aeea7afded5be737e8a produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.524378 [inventario] [OP=LOCK_LIBERTADO] pedido=2 saga=9204831efbac410aa7d03036c429874f
+  inventario-1  | 2026/11/10 19:33:30.524617 [inventario] [OP=LOCK_OBTIDO] pedido=3 saga=ad6c70381f774cb197bd9d4b210294f7
+  inventario-1  | 2026/11/10 19:33:30.527590 [inventario] [OP=RESERVA] pedido=3 saga=ad6c70381f774cb197bd9d4b210294f7 produto=P002 stock 48 -> 47
+  inventario-1  | 2026/11/10 19:33:30.556444 [inventario] [OP=LOCK_LIBERTADO] pedido=3 saga=ad6c70381f774cb197bd9d4b210294f7
+  inventario-1  | 2026/11/10 19:33:30.556543 [inventario] [OP=LOCK_OBTIDO] pedido=4 saga=e34f07ce0612412087f5b340fb7e7d02
+  inventario-1  | 2026/11/10 19:33:30.560025 [inventario] [OP=RESERVA] pedido=4 saga=e34f07ce0612412087f5b340fb7e7d02 produto=P002 stock 47 -> 46
+  inventario-1  | 2026/11/10 19:33:30.580612 [inventario] [OP=LOCK_LIBERTADO] pedido=4 saga=e34f07ce0612412087f5b340fb7e7d02
+  inventario-1  | 2026/11/10 19:33:30.580703 [inventario] [OP=LOCK_OBTIDO] pedido=5 saga=6d28ac501c684f2cb84d3ead30c32a2e
+  inventario-1  | 2026/11/10 19:33:30.583920 [inventario] [OP=RESERVA] pedido=5 saga=6d28ac501c684f2cb84d3ead30c32a2e produto=P002 stock 46 -> 45
+  inventario-1  | 2026/11/10 19:33:30.585206 [inventario] [OP=LOCK_ESPERA] pedido=8 saga=895c55a44c864fb189f09e64052c2194 produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.595929 [inventario] [OP=LOCK_ESPERA] pedido=9 saga=a53dd952c24e414daa034964b2c98dc6 produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.604309 [inventario] [OP=LOCK_LIBERTADO] pedido=5 saga=6d28ac501c684f2cb84d3ead30c32a2e
+  inventario-1  | 2026/11/10 19:33:30.604731 [inventario] [OP=LOCK_OBTIDO] pedido=6 saga=17d58199e04340eabc41b8b8946c55d7
+  inventario-1  | 2026/11/10 19:33:30.608688 [inventario] [OP=RESERVA] pedido=6 saga=17d58199e04340eabc41b8b8946c55d7 produto=P002 stock 45 -> 44
+  inventario-1  | 2026/11/10 19:33:30.626404 [inventario] [OP=LOCK_ESPERA] pedido=10 saga=8f25038b8d27480e896321715e8431bc produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.627690 [inventario] [OP=LOCK_LIBERTADO] pedido=6 saga=17d58199e04340eabc41b8b8946c55d7
+  inventario-1  | 2026/11/10 19:33:30.627984 [inventario] [OP=LOCK_OBTIDO] pedido=7 saga=aefeb48ee6434aeea7afded5be737e8a
+  inventario-1  | 2026/11/10 19:33:30.631131 [inventario] [OP=RESERVA] pedido=7 saga=aefeb48ee6434aeea7afded5be737e8a produto=P002 stock 44 -> 43
+  inventario-1  | 2026/11/10 19:33:30.656600 [inventario] [OP=LOCK_ESPERA] pedido=11 saga=e61b01b42b61466c9070c5f01306b4aa produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.661181 [inventario] [OP=LOCK_ESPERA] pedido=12 saga=080f6e6bc3044c0e818cd7e63736f47c produtos=[P002]
+  inventario-1  | 2026/11/10 19:33:30.663680 [inventario] [OP=LOCK_LIBERTADO] pedido=7 saga=aefeb48ee6434aeea7afded5be737e8a
+  inventario-1  | 2026/11/10 19:33:30.663769 [inventario] [OP=LOCK_OBTIDO] pedido=8 saga=895c55a44c864fb189f09e64052c2194
+  inventario-1  | 2026/11/10 19:33:30.668496 [inventario] [OP=RESERVA] pedido=8 saga=895c55a44c864fb189f09e64052c2194 produto=P002 stock 43 -> 42
+  inventario-1  | 2026/11/10 19:33:30.678346 [inventario] [OP=LOCK_ESPERA] pedido=13 saga=f06c97e8162c47a281120d597854e33f produtos=[P002]
   ... (650 linhas relevantes no total)

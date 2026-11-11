@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/.."
 
-minikube status >/dev/null 2>&1 || minikube start --cpus=4 --memory=6g
+minikube status >/dev/null 2>&1 || minikube start --driver=docker --cpus="${CPUS:-2}" --memory="${MEMORIA:-3g}"
 minikube addons enable metrics-server
 [ -f infra/certs/out/ca.pem ] || sh infra/certs/gerar_certs.sh
 

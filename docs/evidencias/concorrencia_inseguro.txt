@@ -1,51 +1,52 @@
-# concorrencia_inseguro.txt - executado em 2026-11-10T18:23:51 (modo nativo)
+# concorrencia_inseguro.txt - executado em 2026-11-10T21:33:05 (modo docker)
 Modo do inventario: inseguro. 200 encomendas simultaneas (100 threads) de 1 unidade de P002, com stock inicial 50.
 
-Duracao: 3.0 s
+Duracao: 13.7 s
 Estado final das encomendas:
-  CONCLUIDA              200
+  COMPENSADA             3
+  CONCLUIDA              197
 
 Stock inicial .................... 50
-Stock final ...................... 6
-Unidades retiradas do stock ...... 44
-Unidades vendidas (reservas) ..... 200
-INCONSISTENTE: 156 unidades vendidas sem sairem do stock (actualizacoes perdidas pela race condition)
+Stock final ...................... 35
+Unidades retiradas do stock ...... 15
+Unidades vendidas (reservas) ..... 197
+INCONSISTENTE: 182 unidades vendidas sem sairem do stock (actualizacoes perdidas pela race condition)
 
 Excerto dos logs do inventario durante o teste:
-  2026/11/10 18:23:56.577067 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=12 saga=37c4efa934a54f499dea22fcbc24af28 produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.628506 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=1 saga=0ca526a1cf04460496673b4657fda71f produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.630505 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=10 saga=ba3dfebfe9cb4fe7b2dccac851df62bb produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.638501 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=14 saga=fdc8f52b8ec943879c038c99dc585851 produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.642498 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=16 saga=9a74792e90df4ca59d2437c274b4f5c4 produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.689306 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=18 saga=d5db48045c8f4f27a71c16794c968569 produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.750717 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=20 saga=46a72bb0e69d4e3496798a829f6b8ef1 produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.751716 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=21 saga=a6236c4a3c5947778ac298ba97ba652a produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.752717 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=24 saga=bd468ed5e3984831814e3a9f126462bb produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.753715 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=26 saga=87029b1d24034e08a2bd187aa2573b5a produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.754715 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=29 saga=f507ad0c373a4278a39621a5e29cc2ed produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.756714 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=31 saga=b7af761e398a415db5dd67f1f14e01ef produto=P002 leu 50, escreveu 49
-  2026/11/10 18:23:56.757713 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=32 saga=7386953d7d9c45ffa1a5c1bcf97d187b produto=P002 leu 49, escreveu 48
-  2026/11/10 18:23:57.134286 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=33 saga=0ba445a1a54b450ba7a9cb417e7c6f34 produto=P002 leu 48, escreveu 47
-  2026/11/10 18:23:57.135286 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=34 saga=b3593a2592e74255af18c419de791cf9 produto=P002 leu 48, escreveu 47
-  2026/11/10 18:23:57.164651 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=2 saga=f96d953c671546adac4b462d3341e56f produto=P002 leu 48, escreveu 47
-  2026/11/10 18:23:57.207226 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=35 saga=816365d531114a3ea1ae43ed00c814bb produto=P002 leu 47, escreveu 46
-  2026/11/10 18:23:57.209226 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=36 saga=acd517ee2ae0413aa7b4c57bfd20eba6 produto=P002 leu 47, escreveu 46
-  2026/11/10 18:23:57.244831 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=5 saga=c7af0f584d6b485496174981d9ac7b94 produto=P002 leu 47, escreveu 46
-  2026/11/10 18:23:57.275915 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=37 saga=b5c5869f2e7848fc9344de2110418b13 produto=P002 leu 46, escreveu 45
-  2026/11/10 18:23:57.305898 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=6 saga=4e0d0f24b06343b7a7b2e484cd73378c produto=P002 leu 46, escreveu 45
-  2026/11/10 18:23:57.346185 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=40 saga=3411ef71e7fa4b8e91b1d56229513f24 produto=P002 leu 45, escreveu 44
-  2026/11/10 18:23:57.376168 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=4 saga=5e934ebdd55b446ab3e7e172f386d525 produto=P002 leu 46, escreveu 45
-  2026/11/10 18:23:57.384163 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=39 saga=987b50ebb0804e28be1d197de32f2e63 produto=P002 leu 45, escreveu 44
-  2026/11/10 18:23:57.478807 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=9 saga=a65cb7d5d2a8447e823a95d757d646ab produto=P002 leu 44, escreveu 43
-  2026/11/10 18:23:57.482804 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=23 saga=0ffe9ca620d245afa5305afd60739920 produto=P002 leu 43, escreveu 42
-  2026/11/10 18:23:57.482804 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=41 saga=6b8573dd9a324adaa131adbf87bf1c0c produto=P002 leu 44, escreveu 43
-  2026/11/10 18:23:57.482804 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=42 saga=814e85dba29142c89d513e031ed87096 produto=P002 leu 43, escreveu 42
-  2026/11/10 18:23:57.503792 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=38 saga=38288cf6e3da49f5ac5e9ef00de5eed6 produto=P002 leu 45, escreveu 44
-  2026/11/10 18:23:57.553615 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=17 saga=db8e6403910e4113814f5f723781ec2a produto=P002 leu 42, escreveu 41
-  2026/11/10 18:23:57.585085 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=43 saga=d9c5665d90e34b78a0d8c87ad4370b37 produto=P002 leu 42, escreveu 41
-  2026/11/10 18:23:57.585085 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=15 saga=52756ab8d1b046cfb73cd7382831deaf produto=P002 leu 42, escreveu 41
-  2026/11/10 18:23:57.589082 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=44 saga=50f3f66a3cf24eab8cdf77ceef8dd192 produto=P002 leu 41, escreveu 40
-  2026/11/10 18:23:57.593080 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=3 saga=0b79c6b785254cf0b48acf744d808361 produto=P002 leu 41, escreveu 40
-  2026/11/10 18:23:57.593080 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=22 saga=f8a89a0c029240838f4161d9d71448d0 produto=P002 leu 41, escreveu 40
-  2026/11/10 18:23:57.613069 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=45 saga=a647c964bb604cb1958d673c85d0abdd produto=P002 leu 40, escreveu 39
-  ... (200 linhas relevantes no total)
+  inventario-1  | 2026/11/10 19:33:09.277875 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=1 saga=a3e06240376a4819b65a67660a706224 produto=P002 leu 50, escreveu 49
+  inventario-1  | 2026/11/10 19:33:09.581739 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=17 saga=1c3899f54a6c4778b3f0fa81323bf029 produto=P002 leu 49, escreveu 48
+  inventario-1  | 2026/11/10 19:33:09.608932 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=3 saga=a995a5905d6a4fabba1b94a116be1b36 produto=P002 leu 49, escreveu 48
+  inventario-1  | 2026/11/10 19:33:09.629716 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=2 saga=83c21f6c2a334540b2ffabd6a7d0bca4 produto=P002 leu 49, escreveu 48
+  inventario-1  | 2026/11/10 19:33:09.664193 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=19 saga=868cd8729e8b4e71be1933ad2f8b664e produto=P002 leu 49, escreveu 48
+  inventario-1  | 2026/11/10 19:33:09.676618 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=22 saga=f9388c84ce354ae0b16f3f58658aa8f9 produto=P002 leu 48, escreveu 47
+  inventario-1  | 2026/11/10 19:33:09.736748 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=15 saga=fad28bf6d4f546ef832c607b1dd57a78 produto=P002 leu 50, escreveu 49
+  inventario-1  | 2026/11/10 19:33:09.763909 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=4 saga=65886b1709df46438ab2fe398b17300f produto=P002 leu 48, escreveu 47
+  inventario-1  | 2026/11/10 19:33:13.952306 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=38 saga=625e5f0f7ea7411d9af7174f1c130fbb produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:13.980124 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=41 saga=a2c10ca89d7149fe8a35c8afc5b56307 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:13.998341 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=37 saga=44de5ca7640a429d913c2035988d080e produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.016415 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=42 saga=a4864048b61f4c6c90144cc2d0046392 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.261513 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=35 saga=66d2b3b038db4d99a9edb6498997ab79 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.303766 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=45 saga=d27177fdc9a14332931cfc32235f3870 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.304485 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=44 saga=a1229df7aaf84039999bf3368247934f produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.348233 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=52 saga=f0684051a1194909955e390a3b47d58c produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.348330 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=54 saga=29e5f04b498f4e8fb6603a9f0e1ef069 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.349507 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=55 saga=7ca32bc43e0b434c983cb844154b2f38 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.389516 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=62 saga=6657a1b3e76e4c4f997b90b1e5190b4d produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:14.389606 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=56 saga=4e3648bd92644746b4981c9daeee9c8d produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.437229 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=49 saga=af00eab03df34d8a87e7ddd1da12ffb9 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.476630 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=63 saga=56d436502f544732a584059c5e9c19e4 produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:14.495413 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=50 saga=6680046778d6426c86ab037360c1f91a produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.540326 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=60 saga=f9eeefbd48d549afa7abcd5cd9f602d3 produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:14.588007 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=66 saga=16389f1708424246a75d951c7ffd957a produto=P002 leu 44, escreveu 43
+  inventario-1  | 2026/11/10 19:33:14.626707 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=65 saga=ec22cf2b7d5345c0b62458be5de39de4 produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:14.645671 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=46 saga=f394856abac2412eaf5777efc074a515 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.690789 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=51 saga=2ade64adfd8549059620f75261c26eea produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:14.747456 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=74 saga=ae3eb91ff2e748559ee211279b81e30f produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:14.928016 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=69 saga=bc39a0d060d64e6d9172c2db785d5a58 produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:15.038907 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=43 saga=40212785e4624c0687f70b5353150277 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:15.062129 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=79 saga=f46f06373095497c8692612289a406e2 produto=P002 leu 44, escreveu 43
+  inventario-1  | 2026/11/10 19:33:15.083739 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=48 saga=3f82873f1427456c9faa416e58eae370 produto=P002 leu 46, escreveu 45
+  inventario-1  | 2026/11/10 19:33:15.111886 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=80 saga=f084cca7ca7c4957b8001ecd9d2a8cdc produto=P002 leu 44, escreveu 43
+  inventario-1  | 2026/11/10 19:33:15.169911 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=64 saga=b21d797be0144077bc83ad8fe6ee1fa9 produto=P002 leu 45, escreveu 44
+  inventario-1  | 2026/11/10 19:33:15.203750 [inventario] [OP=RESERVA_SEM_PROTECAO] pedido=77 saga=db6bbbd1e6e34a7690642495b9ad5e38 produto=P002 leu 44, escreveu 43
+  ... (197 linhas relevantes no total)

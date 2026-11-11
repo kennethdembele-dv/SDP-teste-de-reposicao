@@ -3,6 +3,19 @@
 Sistema de gestão de transacções de e-commerce distribuído, seguro e interoperável.
 Teste de Reposição de Sistemas Distribuídos e Paralelos. Kenneth Dembele, LECC31.
 
+## Validação
+
+Executado num Windows 10 com Docker Desktop 29.9.3 (WSL2) e Minikube 1.34 (Kubernetes 1.31). As evidências estão em [docs/evidencias/](docs/evidencias/).
+
+| Teste | Resultado |
+|---|---|
+| Concorrência (200 compras simultâneas, stock 50) | Sem mutex: 197 vendas para 15 unidades retiradas. Com mutex: 50/50 |
+| CAP (master em baixo, replicação pausada, partição) | Leituras continuam nas réplicas; escritas recusadas com HTTP 503; leitura obsoleta até a replicação retomar |
+| DFS | `/mnt/dfs` montado como `nfs4`; ficheiros partilhados entre contentores |
+| Carga (Locust) | Mediana: monólito 5 ms, microsserviços 17 ms, mais 20 ms de rede 90 ms |
+| Kubernetes HPA | Gateway a 57% de CPU (alvo 50%): escalou de 1 para 2 pods |
+| Testes automáticos | 27 Python + 3 Go (`go test -race`) |
+
 ## Arquitectura
 
 ```

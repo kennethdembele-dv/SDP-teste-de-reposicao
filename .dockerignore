@@ -1,0 +1,9 @@
+.venv/
+build/
+.git/
+docs/
+testes/
+k8s/
+infra/certs/
+**/__pycache__/
+servicos/inventario/gen/

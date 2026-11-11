@@ -1,0 +1,27 @@
+# dfs.txt - executado em 2026-11-11T12:47:51 (modo docker)
+
+== 1. Escrita pela API ==
+  POST /api/v1/produtos/P003/imagem -> HTTP 200, imagem=imagens/P003-0ce9e4bd.png
+  POST /api/v1/encomendas -> HTTP 200, estado=CONCLUIDA, total=1300.0 MT
+  POST /api/v1/relatorios/faturacao -> HTTP 200, ficheiro=relatorios/faturacao-2026-11-11-104752.csv, pagamentos=1, total=1300.0 MT
+
+== 2. Tipo de montagem de /mnt/dfs ==
+$ docker compose exec gateway sh -c "grep /mnt/dfs /proc/mounts"
+  :/dfs /mnt/dfs nfs4 rw,relatime,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,soft,fatal_neterrors=ENETDOWN:ENETUNREACH,proto=tcp,timeo=50,retrans=2
+$ docker compose exec pagamentos sh -c "grep /mnt/dfs /proc/mounts"
+  :/dfs /mnt/dfs nfs4 rw,relatime,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,soft,fatal_neterrors=ENETDOWN:ENETUNREACH,proto=tcp,timeo=50,retrans=2
+
+== 3. Os mesmos ficheiros vistos por cada no ==
+$ docker compose exec gateway sh -c "ls -l /mnt/dfs/imagens | tail -3; ls -l /mnt/dfs/relatorios/faturacao-2026-11-11-104752.csv"
+  total 8
+  -rw-r--r-- 1 root root 70 Nov 11 10:47 P003-0ce9e4bd.png
+  -rw-r--r-- 1 root root 70 Nov 11 10:47 P003-6fca8f98.png
+  -rw-r--r-- 1 root root 197 Nov 11 10:47 /mnt/dfs/relatorios/faturacao-2026-11-11-104752.csv
+$ docker compose exec pagamentos sh -c "ls -l /mnt/dfs/imagens/P003-0ce9e4bd.png /mnt/dfs/relatorios/faturacao-2026-11-11-104752.csv"
+  -rw-r--r-- 1 root root  70 Nov 11 10:47 /mnt/dfs/imagens/P003-0ce9e4bd.png
+  -rw-r--r-- 1 root root 197 Nov 11 10:47 /mnt/dfs/relatorios/faturacao-2026-11-11-104752.csv
+$ docker compose exec nfs sh -c "ls -l /exports/dfs/imagens/P003-0ce9e4bd.png /exports/dfs/relatorios/faturacao-2026-11-11-104752.csv"
+  -rw-r--r-- 1 root root  70 Nov 11 10:47 /exports/dfs/imagens/P003-0ce9e4bd.png
+  -rw-r--r-- 1 root root 197 Nov 11 10:47 /exports/dfs/relatorios/faturacao-2026-11-11-104752.csv
+  -> o relatorio escrito pelos pagamentos e a imagem escrita pelo gateway estao no servidor NFS,
+     e cada contentor ve os ficheiros do outro: nada fica no disco local dos contentores.

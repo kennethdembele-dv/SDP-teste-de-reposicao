@@ -1,17 +1,17 @@
-# cap.txt - executado em 2026-11-10T18:24:16 (modo nativo)
+# cap.txt - executado em 2026-11-10T22:01:04 (modo docker)
 
 == 1. Situacao normal ==
-  18:24:17 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
-  18:24:17 GET HTTP 200 fonte=replica1  5 produtos (5 ms)
-  18:24:17 GET HTTP 200 fonte=replica2  5 produtos (4 ms)
-  18:24:17 GET HTTP 200 fonte=replica1  5 produtos (14 ms)
+  22:01:05 GET HTTP 200 fonte=replica1  5 produtos (9 ms)
+  22:01:05 GET HTTP 200 fonte=replica2  5 produtos (8 ms)
+  22:01:05 GET HTTP 200 fonte=replica1  5 produtos (8 ms)
+  22:01:05 GET HTTP 200 fonte=replica2  5 produtos (8 ms)
   POST compra: HTTP 200 estado=CONCLUIDA
 
 == 2. No master derrubado (paragem imediata do pg-master) ==
-  18:24:19 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
-  18:24:19 GET HTTP 200 fonte=replica1  5 produtos (7 ms)
-  18:24:19 GET HTTP 200 fonte=replica2  5 produtos (6 ms)
-  18:24:19 GET HTTP 200 fonte=replica1  5 produtos (6 ms)
+  22:01:09 GET HTTP 200 fonte=replica1  5 produtos (9 ms)
+  22:01:09 GET HTTP 200 fonte=replica2  5 produtos (8 ms)
+  22:01:09 GET HTTP 200 fonte=replica1  5 produtos (9 ms)
+  22:01:09 GET HTTP 200 fonte=replica2  5 produtos (8 ms)
   POST compra: HTTP 503 UNAVAILABLE: base de dados das encomendas indisponivel
   -> leituras continuam nas replicas (A); compras recusadas para nao haver escritas divergentes (C)
   master de volta, POST compra: HTTP 200 estado=CONCLUIDA
@@ -19,21 +19,21 @@
 == 3. Leitura obsoleta: replicacao pausada nas duas replicas ==
   master: stock de P004 alterado de 307 para 314 (HTTP 200)
   valor lido directamente no master: 314
-  18:24:39 GET HTTP 200 fonte=replica1  stock=307 (8 ms)
-  18:24:39 GET HTTP 200 fonte=replica2  stock=307 (6 ms)
-  18:24:39 GET HTTP 200 fonte=replica1  stock=307 (5 ms)
+  22:01:21 GET HTTP 200 fonte=replica2  stock=307 (9 ms)
+  22:01:21 GET HTTP 200 fonte=replica1  stock=307 (9 ms)
+  22:01:21 GET HTTP 200 fonte=replica2  stock=307 (11 ms)
   -> as replicas respondem com o valor antigo: disponiveis, mas so com consistencia eventual
   replicacao retomada:
-  18:24:41 GET HTTP 200 fonte=replica2  stock=314 (5 ms)
-  18:24:41 GET HTTP 200 fonte=replica1  stock=314 (4 ms)
+  22:01:24 GET HTTP 200 fonte=replica1  stock=314 (10 ms)
+  22:01:24 GET HTTP 200 fonte=replica2  stock=314 (14 ms)
 
 == 4. Particao de rede: pg-replica1 isolada do inventario ==
-  18:24:42 GET HTTP 200 fonte=replica2  5 produtos (28 ms)
-  18:24:44 GET HTTP 200 fonte=replica2  5 produtos (2005 ms)
-  18:24:44 GET HTTP 200 fonte=replica2  5 produtos (5 ms)
-  18:24:46 GET HTTP 200 fonte=replica2  5 produtos (2004 ms)
-  log inventario: 2026/11/10 18:24:44.434980 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
-  log inventario: 2026/11/10 18:24:46.444566 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
+  22:01:28 GET HTTP 200 fonte=replica2  5 produtos (2011 ms)
+  22:01:28 GET HTTP 200 fonte=replica2  5 produtos (8 ms)
+  22:01:30 GET HTTP 200 fonte=replica2  5 produtos (2012 ms)
+  22:01:30 GET HTTP 200 fonte=replica2  5 produtos (10 ms)
+  log inventario: inventario-1  | 2026/11/10 20:01:28.315406 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
+  log inventario: inventario-1  | 2026/11/10 20:01:30.334462 [inventario] [OP=LEITURA_FALHOU] replica1 indisponivel: context deadline exceeded
   particao terminada
-  18:24:49 GET HTTP 200 fonte=replica2  5 produtos (5 ms)
-  18:24:49 GET HTTP 200 fonte=replica1  5 produtos (81 ms)
+  22:01:34 GET HTTP 200 fonte=replica1  5 produtos (24 ms)
+  22:01:34 GET HTTP 200 fonte=replica2  5 produtos (9 ms)

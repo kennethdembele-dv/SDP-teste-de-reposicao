@@ -434,7 +434,33 @@ def conteudo(doc, fig, proto):
              "está configurado para o inventário (1 a 5 pods), os pagamentos e o gateway (1 a 4), com alvo de 50% "
              "de CPU. Como o inventário pode ter vários pods, o mutex de cada pod não chega: é o `SELECT ... FOR "
              "UPDATE` que mantém a consistência entre pods.")
-    evidencia(doc, "hpa.txt", "sh k8s/carga_hpa.sh", "Tabela 11 — Evolução do HPA sob carga", maximo=30)
+    if (EVID / "hpa.txt").exists():
+        par(doc, "**Execução.** O sistema foi implantado num cluster Minikube 1.34 (Kubernetes 1.31, driver Docker, "
+                 "2 CPU e 3 GB) com `sh k8s/implantar.sh`: 9 pods (master e 2 réplicas PostgreSQL, NFS e os cinco "
+                 "serviços), com o volume NFS montado no gateway e nos pagamentos. O `sh k8s/carga_hpa.sh` lançou "
+                 "150 utilizadores Locust dentro do cluster durante 5 minutos e registou o HPA a cada 15 s:")
+        tabela(doc, ["Hora", "Gateway CPU / pods", "Inventário CPU / pods", "Pagamentos CPU / pods"], [
+            ["12:39:33 (início)", "4% / 1", "1% / 1", "3% / 1"],
+            ["12:40:21", "44% / 1", "3% / 1", "3% / 1"],
+            ["12:41:08", "57% / 1", "26% / 1", "20% / 1"],
+            ["12:41:24", "57% / 2  (HPA escalou)", "26% / 1", "20% / 1"],
+            ["12:42:42", "60% / 2", "25% / 1", "14% / 1"],
+            ["12:43:45", "31% / 2", "24% / 1", "3% / 1"],
+            ["12:45:34 (fim)", "17% / 2", "12% / 1", "2% / 1"],
+        ], [3.4, 4.6, 4.4, 4.2])
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        r = p.add_run("Tabela 11 — Evolução real do HPA (alvo 50% de CPU), extraída de docs/evidencias/hpa.txt.")
+        r.italic = True
+        r.font.size = Pt(9)
+        par(doc, "**Análise.** Quando a CPU média do gateway passou o alvo de 50% (57%), o HPA criou um segundo pod, e a "
+                 "carga repartida desceu para 30–31% por pod: o novo pod entrou no Service sem nenhuma alteração nos "
+                 "clientes, o que mostra a transparência de localização. O gateway é o componente mais pesado, porque "
+                 "converte cada pedido REST em gRPC e verifica o JWT. O inventário, em Go, não passou de 26% e não "
+                 "precisou de escalar. Os pods novos não descem logo: o HPA espera uma janela de estabilização antes "
+                 "de reduzir, para não oscilar.")
+    else:
+        evidencia(doc, "hpa.txt", "sh k8s/carga_hpa.sh", "Tabela 11 — Evolução do HPA sob carga", maximo=30)
 
     # 12
     H1("12. Módulo 8 — Sistema de ficheiros distribuído")
@@ -451,6 +477,8 @@ def conteudo(doc, fig, proto):
     par(doc, "Os ficheiros são escritos com nome temporário e depois renomeados, para que nenhum leitor veja um "
              "ficheiro incompleto. O servidor NFS não tem réplica: se ele falhar, as compras continuam, mas o upload "
              "e a leitura de ficheiros ficam indisponíveis até ele voltar.")
+    evidencia(doc, "dfs.txt", "python testes/sistema/dfs.py",
+              "Tabela 12 — Imagem e relatório escritos pela API e vistos por todos os nós através do NFS", maximo=30)
 
     # 13
     H1("13. Módulo 9 — OMG e a arquitectura OMA")
@@ -492,9 +520,10 @@ def conteudo(doc, fig, proto):
              "encomendas simultâneas de 1 unidade, a partir de 100 threads. Corre duas vezes: com o inventário "
              "normal e com `MODO_INSEGURO=true`. Uma compra está consistente quando cada unidade vendida corresponde "
              "a uma unidade retirada do stock.")
-    par(doc, "**Resultados.** Sem protecção, as 200 encomendas foram todas aceites, mas o stock só desceu 44 "
-             "unidades: 156 vendas não correspondem a stock retirado. Várias goroutines leram o mesmo valor e "
-             "escreveram o mesmo resultado (actualizações perdidas), o que prova a race condition. Com o mutex e o "
+    par(doc, "**Resultados (Docker Compose).** Sem protecção, 197 das 200 encomendas foram aceites, mas o stock só "
+             "desceu 15 unidades: 182 vendas não correspondem a stock retirado. Várias goroutines leram o mesmo valor "
+             "e escreveram o mesmo resultado (actualizações perdidas), o que prova a race condition. Em modo nativo o "
+             "resultado foi do mesmo tipo (200 vendas para 44 unidades retiradas). Com o mutex e o "
              "bloqueio de linha, foram vendidas exactamente 50 unidades, as outras 150 encomendas foram "
              "rejeitadas por falta de stock e o stock final é 0. Os logs mostram as goroutines em fila "
              "(LOCK_ESPERA), uma de cada vez a obter o mutex (LOCK_OBTIDO), a actualizar o stock (RESERVA) e a "
@@ -521,10 +550,13 @@ def conteudo(doc, fig, proto):
         ["Réplica 1 isolada", "LEITURA_FALHOU nos logs; as leituras passam à réplica 2", "Tolerância a partições"],
     ], [3.6, 8.6, 4.4])
     evidencia(doc, "cap.txt", "python testes/sistema/cap.py", "Tabela 16 — Execução da prova de conceito CAP", maximo=50)
-    par(doc, "Nesta execução, em modo nativo, o master foi derrubado com uma paragem imediata (`pg_ctl stop -m "
-             "immediate`) e a partição foi criada pelo proxy de rede entre o inventário e a réplica 1, que deixa de "
-             "passar pacotes como uma regra `iptables DROP`. Em Docker, os mesmos passos usam `docker compose stop` "
-             "e `docker network disconnect`.")
+    par(doc, "Esta execução foi feita em Docker Compose: o master foi derrubado com `docker compose stop pg-master` "
+             "e a partição foi criada com `docker network disconnect` da réplica 1. A mesma experiência foi também "
+             "repetida em modo nativo, com um proxy de rede a cortar a ligação, com o mesmo comportamento. A primeira "
+             "execução em Docker revelou um defeito: com o contentor do master parado, o nome `pg-master` desaparece "
+             "do DNS do Docker e o pool de ligações do Serviço de Encomendas não recuperava sozinho quando o master "
+             "voltava. Foi corrigido com um pool que se recria após uma falha (`servicos/comum/pool.py`); a execução "
+             "apresentada já inclui a correcção, e a compra depois do regresso do master foi aceite.")
     par(doc, "**Discussão.** Com o master em baixo, as leituras continuaram (HTTP 200, alternando entre as réplicas) "
              "e a compra foi recusada com HTTP 503: o sistema escolheu disponibilidade para as leituras e "
              "consistência para as escritas, para não haver duas versões do mesmo stock. Com a replicação pausada, o "
@@ -546,23 +578,22 @@ def conteudo(doc, fig, proto):
                 "docker compose start pg-master")
 
     H1("18. Estado da validação")
-    par(doc, "Os testes foram executados num computador Windows 10 sem Docker, em modo nativo (`scripts/nativo.py`): "
-             "os seis serviços, os proxies de rede e quatro clusters PostgreSQL 16.4 (master, duas réplicas em "
-             "streaming e o monólito) correram como processos separados, com o inventário compilado em Go 1.23.4. "
-             "As diferenças em relação ao Docker Compose são duas: o DFS foi uma pasta local, porque o Windows não "
-             "tem cliente NFS, e a partição e a latência de rede foram simuladas pelo proxy `scripts/proxy_rede.py`.")
-    validados = [["Inventário em Go: go vet e 3 testes de concorrência", "Executado"],
+    par(doc, "Tudo foi executado num computador Windows 10 (4 CPU, 8 GB) com Docker Desktop 29.9.3 sobre WSL2. "
+             "Antes de o Docker estar instalado, os mesmos testes foram corridos em modo nativo (`scripts/nativo.py`), "
+             "com PostgreSQL 16.4 e o inventário compilado em Go 1.23.4; o teste de carga apresentado é dessa "
+             "execução. As restantes evidências são da execução em Docker Compose.")
+    validados = [["Inventário em Go: go vet e go test -race (no docker build)", "Executado"],
                  ["Saga, idempotência e recuperação (8 testes)", "Executado"],
                  ["gRPC + mTLS + JWT entre serviços reais (13 testes, 7 recusas de segurança)", "Executado"],
                  ["Identidade HTTPS mTLS e gateway REST/OpenAPI (6 testes, Swagger)", "Executado"],
-                 ["Fluxo completo Go + Python: compra concluída e compensada", "Executado (modo nativo)"],
-                 ["Análise de concorrência, seguro e inseguro (secção 15)", "Executado (modo nativo)"],
-                 ["Prova de conceito CAP com master derrubado e partição (secção 16)", "Executado (modo nativo)"],
+                 ["Docker Compose: 9 contentores, rede bridge, réplicas em streaming", "Executado"],
+                 ["NFS montado como nfs4 e partilhado entre contentores (secção 12)", "Executado"],
+                 ["Análise de concorrência, seguro e inseguro (secção 15)", "Executado (Docker e nativo)"],
+                 ["Prova de conceito CAP com master derrubado e partição (secção 16)", "Executado (Docker e nativo)"],
                  ["Teste de carga monólito vs microsserviços vs latência (secção 6)", "Executado (modo nativo)"],
-                 ["Docker Compose, NFS partilhado entre contentores", "Por executar: requer Docker Desktop"],
-                 ["Kubernetes e HPA (secção 11)", "Por executar: requer Docker Desktop e Minikube"]]
+                 ["Kubernetes e HPA (secção 11)", "Por executar"]]
     if (EVID / "hpa.txt").exists():
-        validados[-1][1] = "Executado: ver docs/evidencias/hpa.txt"
+        validados[-1][1] = "Executado (Minikube)"
     tabela(doc, ["Componente", "Estado"], validados, [11.0, 5.6])
 
     H1("19. Conclusão")

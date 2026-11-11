@@ -14,7 +14,7 @@ import time
 RAIZ = pathlib.Path(__file__).resolve().parents[2]
 EVID = RAIZ / "docs" / "evidencias"
 EDGE = os.environ.get("EDGE", "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe")
-TESTES = {"concorrencia_inseguro": 32, "concorrencia_seguro": 32, "cap": 46, "carga": 20}
+TESTES = {"concorrencia_inseguro": 32, "concorrencia_seguro": 32, "cap": 46, "carga": 20, "dfs": 30}
 CORES = {"INCONSISTENTE": "#ff6b6b", "CONSISTENTE": "#5ee27a", "HTTP 503": "#ffb454", "LEITURA_FALHOU": "#ffb454",
          "LOCK_": "#7cc4ff", "SEM_PROTECAO": "#ff9e9e", "==": "#e6db74"}
 
