@@ -513,6 +513,13 @@ def conteudo(doc, fig, proto):
     swagger = EVID / "swagger.png"
     if swagger.exists():
         figura(doc, str(swagger), "Figura 3 — Swagger UI do gateway (captura real, gateway em execução).", largura=14)
+    par(doc, "Além do Swagger, o gateway serve uma interface gráfica web em `/` (`servicos/gateway/web/`), feita em "
+             "HTML, CSS e JavaScript sem bibliotecas externas. Usa apenas a API REST pública, como qualquer outro "
+             "cliente. Tem uma loja com catálogo (mostrando a réplica que respondeu a cada leitura), carrinho e "
+             "checkout com o percurso da saga, a lista de encomendas, a administração (stock, upload de imagens para "
+             "o NFS e relatórios de faturação) e duas demonstrações para a defesa: compras concorrentes lançadas a "
+             "partir do browser, com verificação da consistência, e um monitor de leituras para mostrar o "
+             "comportamento CAP quando o master é derrubado.")
 
     # 15
     H1("15. Análise de concorrência")

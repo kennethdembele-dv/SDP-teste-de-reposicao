@@ -15,8 +15,9 @@ from typing import List, Optional
 import grpc
 import uvicorn
 from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from comum import seguranca
@@ -270,6 +271,17 @@ def gerar_relatorio(data: str = "", u: dict = Depends(administrador)):
 @app.get("/saude", tags=["sistema"])
 def saude():
     return {"estado": "ok"}
+
+
+# ---------------- Interface grafica (web/) ----------------
+# A interface usa apenas a API REST acima, como qualquer outro cliente.
+app.mount("/app", StaticFiles(directory=os.path.join(os.path.dirname(os.path.abspath(__file__)), "web"), html=True),
+          name="interface")
+
+
+@app.get("/", include_in_schema=False)
+def raiz():
+    return RedirectResponse("/app/")
 
 
 if __name__ == "__main__":

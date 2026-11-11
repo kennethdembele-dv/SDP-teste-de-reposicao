@@ -77,6 +77,18 @@ class TesteGateway(unittest.TestCase):
         r = TestClient(gateway.app).get("/api/v1/produtos")
         self.assertEqual(r.status_code, 401)
 
+    def test_interface_grafica_e_servida(self):
+        from fastapi.testclient import TestClient
+        gateway = apoio.carregar("gateway", "main", "gateway_main4")
+        cliente = TestClient(gateway.app)
+        raiz = cliente.get("/", follow_redirects=False)
+        self.assertEqual((raiz.status_code, raiz.headers["location"]), (307, "/app/"))
+        pagina = cliente.get("/app/")
+        self.assertEqual(pagina.status_code, 200)
+        self.assertIn("Distributed-Buy", pagina.text)
+        for f in ("/app/app.js", "/app/app.css"):
+            self.assertEqual(cliente.get(f).status_code, 200)
+
     def test_cliente_nao_pode_carregar_imagens(self):
         from fastapi.testclient import TestClient
         gateway = apoio.carregar("gateway", "main", "gateway_main3")

@@ -60,7 +60,19 @@ docker compose up -d --build
 docker compose ps
 ```
 
-Abrir <http://localhost:8080/docs>. Para usar a API:
+### Interface gráfica
+
+Abrir <http://localhost:8080/>: é servida pelo próprio gateway (`servicos/gateway/web/`) e usa apenas a API REST pública.
+
+| Secção | O que faz |
+|---|---|
+| Loja | Catálogo com imagens do DFS e a réplica que respondeu à leitura; carrinho; checkout com o percurso da saga |
+| As minhas encomendas | Estado de cada encomenda e passos da saga (reserva, pagamento, compensação) |
+| Administração (`admin`) | Stock (escrito no master), upload de imagens para o NFS, relatório de faturação em CSV |
+| Demonstrações (`admin`) | Compras concorrentes a partir do browser (verifica a consistência) e monitor de leituras para a demonstração CAP |
+| Sistema | Estado do gateway, token e componentes com portos e protocolos |
+
+A API está documentada em <http://localhost:8080/docs>. Para a usar directamente:
 
 1. Em `POST /api/v1/auth/token`, entrar com `cliente1` / `Cliente#2026`, ou `admin` / `Admin#2026`.
 2. Carregar em **Authorize** e colar o `access_token`.

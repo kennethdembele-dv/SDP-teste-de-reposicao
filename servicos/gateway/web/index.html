@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Distributed-Buy</title>
+  <link rel="stylesheet" href="/app/app.css">
+</head>
+<body>
+  <!-- Ecra de entrada -->
+  <section id="ecra-login" class="login" hidden>
+    <div class="login-cartao">
+      <div class="marca grande"><span class="logo">DB</span><div><strong>Distributed-Buy</strong><small>E-commerce distribuído, seguro e interoperável</small></div></div>
+      <form id="form-login" autocomplete="on">
+        <label>Utilizador<input id="login-utilizador" name="username" required autocomplete="username" value="cliente1"></label>
+        <label>Senha<input id="login-senha" name="password" type="password" required autocomplete="current-password"></label>
+        <button class="botao largo" type="submit">Entrar</button>
+        <p id="login-erro" class="erro-texto" role="alert"></p>
+      </form>
+      <div class="contas">
+        <span>Contas de demonstração:</span>
+        <button type="button" class="botao fantasma peq" data-conta="cliente1|Cliente#2026">cliente1</button>
+        <button type="button" class="botao fantasma peq" data-conta="admin|Admin#2026">admin</button>
+      </div>
+      <p class="nota">O token JWT é emitido pelo serviço de identidade (RS256) e verificado em cada serviço.</p>
+    </div>
+  </section>
+
+  <!-- Aplicacao -->
+  <div id="aplicacao" class="aplicacao" hidden>
+    <header class="topo">
+      <div class="marca"><span class="logo">DB</span><strong>Distributed-Buy</strong></div>
+      <nav id="menu" aria-label="Secções"></nav>
+      <div class="topo-direita">
+        <button id="botao-carrinho" class="botao fantasma carrinho-botao" type="button" aria-label="Carrinho">
+          🛒 <span id="carrinho-contador" class="contador">0</span>
+        </button>
+        <span id="utilizador" class="utilizador"></span>
+        <button id="tema" class="botao fantasma peq" type="button" aria-label="Mudar tema">◐</button>
+        <button id="sair" class="botao fantasma peq" type="button">Sair</button>
+      </div>
+    </header>
+    <div id="faixa" class="faixa" hidden></div>
+    <main id="conteudo" aria-live="polite"></main>
+  </div>
+
+  <!-- Carrinho lateral -->
+  <aside id="carrinho" class="carrinho" aria-label="Carrinho" hidden>
+    <div class="carrinho-topo"><h2>Carrinho</h2><button id="fechar-carrinho" class="botao fantasma peq" type="button">Fechar</button></div>
+    <div id="carrinho-itens"></div>
+    <form id="form-checkout" class="checkout">
+      <div class="linha-total"><span>Total</span><strong id="carrinho-total">0,00 MT</strong></div>
+      <label>Número do cartão<input id="cartao" inputmode="numeric" required value="4111111111111111" autocomplete="cc-number"></label>
+      <p class="nota">Cartões de teste: <code>4111111111111111</code> aprovado · <code>4000000000000002</code> recusado (mostra a compensação).</p>
+      <button id="finalizar" class="botao largo" type="submit">Finalizar compra</button>
+    </form>
+  </aside>
+
+  <div id="mensagens" class="mensagens" role="status"></div>
+  <dialog id="janela"><div class="janela-topo"><strong id="janela-titulo"></strong><button class="botao fantasma peq" id="janela-fechar" type="button">Fechar</button></div><div id="janela-corpo"></div></dialog>
+  <script src="/app/app.js"></script>
+</body>
+</html>
